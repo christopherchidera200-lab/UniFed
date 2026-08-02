@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * DESIGN TOKENS
+ * -------------
+ * Single source of truth for the CloudIntel visual language. Values are raw HSL
+ * channels so Tailwind's <alpha-value> syntax works (e.g. `bg-surface/60`).
+ *
+ * Light is the default; dark is applied via [data-theme="dark"] on <html>, set
+ * before paint by the inline script in layout.tsx to avoid a flash of wrong theme.
+ */
+@layer base {
+  :root {
+    --canvas: 0 0% 100%;
+    --surface: 0 0% 100%;
+    --elevated: 220 20% 98%;
+    --border: 220 13% 87%;
+    /* Boundary for INTERACTIVE controls (inputs, checkboxes, segmented buttons).
+       Held at >=3:1 against --surface to satisfy WCAG 1.4.11 Non-text Contrast.
+       --border above is for decorative dividers, which 1.4.11 does not cover. */
+    --border-strong: 220 10% 55%;
+    --muted: 220 14% 96%;
+    --foreground: 224 30% 12%;
+    --subtle: 220 12% 40%;
+
+    --accent: 243 75% 59%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 243 75% 96%;
+
+    --severity-info: 220 9% 46%;
+    --severity-low: 199 89% 42%;
+    --severity-medium: 32 95% 44%;
+    --severity-high: 0 72% 51%;
+
+    --success: 142 71% 36%;
+    --danger: 0 72% 51%;
+
+    --radius-sm: 0.25rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    --shadow-xs: 0 1px 2px 0 hsl(224 30% 12% / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(224 30% 12% / 0.06), 0 1px 2px -1px hsl(224 30% 12% / 0.06);
+    --shadow-md: 0 4px 12px -2px hsl(224 30% 12% / 0.08), 0 2px 4px -2px hsl(224 30% 12% / 0.04);
+    --shadow-lg: 0 12px 32px -8px hsl(224 30% 12% / 0.12), 0 4px 8px -4px hsl(224 30% 12% / 0.06);
+  }
+
+  [data-theme='dark'] {
+    --canvas: 224 30% 7%;
+    --surface: 224 26% 10%;
+    --elevated: 224 22% 13%;
+    --border: 223 16% 25%;
+    --border-strong: 220 9% 55%;
+    --muted: 224 22% 15%;
+    --foreground: 210 20% 96%;
+    --subtle: 218 13% 68%;
+
+    --accent: 243 82% 68%;
+    --accent-foreground: 224 30% 7%;
+    --accent-subtle: 243 40% 18%;
+
+    --severity-info: 218 11% 62%;
+    --severity-low: 199 89% 56%;
+    --severity-medium: 32 95% 58%;
+    --severity-high: 0 84% 64%;
+
+    --success: 142 64% 50%;
+    --danger: 0 84% 64%;
+
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.24);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.32), 0 1px 2px -1px hsl(0 0% 0% / 0.24);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.40), 0 2px 4px -2px hsl(0 0% 0% / 0.24);
+    --shadow-lg: 0 12px 32px -8px hsl(0 0% 0% / 0.56), 0 4px 8px -4px hsl(0 0% 0% / 0.32);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-canvas text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /*
+   * Accessibility: a visible, high-contrast focus ring on keyboard navigation only.
+   * :focus-visible (not :focus) keeps mouse clicks clean without penalising keyboard users.
+   */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-canvas;
+  }
+
+  /* Respect the OS-level reduced-motion preference. WCAG 2.3.3. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Skip link: first tab stop on every page, visually hidden until focused. */
+  .skip-link {
+    @apply absolute left-4 top-4 z-50 -translate-y-20 rounded bg-accent px-4 py-2
+           text-sm font-medium text-accent-foreground transition-transform
+           focus-visible:translate-y-0;
+  }
+}
