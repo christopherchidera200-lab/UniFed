@@ -1,0 +1,46 @@
+name: Infrastructure CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+  pull_request:
+    paths: ["infra/**", ".github/workflows/infra.yml"]
+
+permissions:
+  contents: read
+  id-token: write   # OIDC — no long-lived AWS keys in GitHub secrets
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+        working-directory: infra
+
+      - name: Validate each environment
+        working-directory: infra/envs/dev
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: infra
+        continue-on-error: true
+
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra
+          framework: terraform
+          soft_fail: true
