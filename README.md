@@ -6,12 +6,33 @@ Cloud-native OSINT aggregation SaaS. Legal, public-source intelligence in one da
 
 | Layer | State |
 |---|---|
-| Backend API | Domain intelligence vertical slice (DNS, WHOIS, TLS, HTTP fingerprint, subdomains) + risk scoring. **52 tests passing.** |
-| Frontend | **Phase 0** — design system, theming, typed API client, test harness. **118 unit + 17 e2e passing.** |
-| Investigation UI | Not started (Phase 2) |
+| Backend API | Domain intelligence vertical slice (DNS, WHOIS, TLS, HTTP fingerprint, subdomains) + risk scoring, blocking **and** streaming endpoints. **72 tests passing.** |
+| Frontend | Design system, theming, typed API client, SSE client. **186 unit passing.** |
+| Investigation UI | **Phase 1 complete** — streaming workspace at `/investigate`. **33 e2e passing** (Chromium, WebKit, mobile Safari). |
 
-The landing page currently demonstrates the design system and accessibility
-scaffolding. The investigation workspace replaces it in Phase 2.
+## Streaming
+
+Investigation latency is set by the slowest third-party source. Measured against
+`github.com`, four collectors finished within 4s while Certificate Transparency
+burned its full 15s timeout — so the blocking endpoint made every result wait 15s.
+
+`POST /investigations/stream` emits each collector's result as it settles:
+
+| Event | Arrival (streaming) | Blocking |
+|---|---|---|
+| `tls` ok | 2.9s | 15.0s |
+| `dns` ok | 3.2s | 15.0s |
+| `http` ok | 4.1s | 15.0s |
+| `whois` ok | 9.2s | 15.0s |
+| `complete` | 17.1s | 15.0s |
+
+Time to first intelligence: **15.0s → 2.9s**. Total wall-clock is unchanged; this
+trades one long wait for progressive disclosure. See
+[ADR 0005](docs/adr/0005-streaming-investigations.md).
+
+> **Infrastructure note:** response buffering must be disabled on
+> `/investigations/stream`. The app sets `X-Accel-Buffering: no`, but a proxy that
+> buffers anyway silently degrades streaming back into a slow blocking request.
 
 ## Repo layout
 

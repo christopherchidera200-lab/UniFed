@@ -29,9 +29,10 @@ const LIGHT = {
   subtle: hsl(220, 12, 40),
   accent: hsl(243, 75, 59),
   accentForeground: hsl(0, 0, 100),
-  severityLow: hsl(199, 89, 42),
-  severityMedium: hsl(32, 95, 44),
-  severityHigh: hsl(0, 72, 51),
+  severityInfo: hsl(220, 9, 45),
+  severityLow: hsl(199, 89, 25),
+  severityMedium: hsl(32, 95, 29),
+  severityHigh: hsl(0, 72, 49),
   success: hsl(142, 71, 36),
 } as const;
 
@@ -46,6 +47,7 @@ const DARK = {
   subtle: hsl(218, 13, 68),
   accent: hsl(243, 82, 68),
   accentForeground: hsl(224, 30, 7),
+  severityInfo: hsl(218, 11, 62),
   severityLow: hsl(199, 89, 56),
   severityMedium: hsl(32, 95, 58),
   severityHigh: hsl(0, 84, 64),
@@ -106,6 +108,18 @@ describe.each(THEMES)('%s theme — severity palette carries meaning', (_theme, 
     // A red/amber pair that both pass against the background but look identical
     // to each other would still fail an analyst scanning a findings table.
     expect(contrastRatio(t.severityHigh, t.severityLow)).toBeGreaterThan(1.2);
+  });
+
+  // Regression: severity text is rendered on --muted (the badge fill), NOT on
+  // --surface. Asserting only against the surface let light-mode 'medium' ship at
+  // 2.87:1 — an outright AA failure that a visual review caught before this test did.
+  it.each([
+    ['info', t.severityInfo],
+    ['low', t.severityLow],
+    ['medium', t.severityMedium],
+    ['high', t.severityHigh],
+  ])('%s badge text is legible on the badge fill it actually sits on', (_label, colour) => {
+    expect(contrastRatio(colour, t.muted)).toBeGreaterThanOrEqual(WCAG.AA_TEXT);
   });
 });
 
