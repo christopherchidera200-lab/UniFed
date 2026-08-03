@@ -6,9 +6,9 @@ Cloud-native OSINT aggregation SaaS. Legal, public-source intelligence in one da
 
 | Layer | State |
 |---|---|
-| Backend API | Domain intelligence vertical slice (DNS, WHOIS, TLS, HTTP fingerprint, subdomains) + risk scoring, blocking **and** streaming endpoints. **72 tests passing.** |
+| Backend API | Domain **and** IP / email / username intelligence. Collectors: forward DNS, RDAP (registration), reverse DNS, email-domain, TLS, HTTP, subdomains, username-presence. Blocking **and** streaming. **93 tests passing.** |
 | Frontend | Design system, theming, typed API client, SSE client. **186 unit passing.** |
-| Investigation UI | **Phase 1 complete** — streaming workspace at `/investigate`. **33 e2e passing** (Chromium, WebKit, mobile Safari). |
+| Investigation UI | **Phase 1 + target expansion complete** — streaming workspace at `/investigate` for all four target types. **36 e2e passing** (Chromium, WebKit, mobile Safari; mocked + one live-IP run). |
 
 ## Streaming
 

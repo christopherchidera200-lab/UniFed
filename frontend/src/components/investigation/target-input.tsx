@@ -4,7 +4,7 @@ import { useEffect, useId, useState, type FormEvent } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TARGET_TYPES, type TargetType } from '@/lib/api/types';
-import { detectTargetType, targetTypeLabel } from '@/lib/utils/detect-target';
+import { detectTargetType, targetTypeLabel, targetPlaceholder, targetExample } from '@/lib/utils/detect-target';
 import { cn } from '@/lib/utils/cn';
 
 export interface TargetInputProps {
@@ -66,7 +66,7 @@ export function TargetInput({ onSubmit, onCancel, busy, initialValue = '' }: Tar
             type="text"
             value={value}
             onChange={(event) => setValue(event.target.value)}
-            placeholder="example.com, 8.8.8.8, analyst@example.com, octocat"
+            placeholder={targetPlaceholder(effectiveType)}
             aria-describedby={hintId}
             autoComplete="off"
             spellCheck={false}
@@ -135,6 +135,9 @@ export function TargetInput({ onSubmit, onCancel, busy, initialValue = '' }: Tar
           })}
         </div>
       </div>
+      <p className="text-xs text-subtle">
+        Investigating {targetExample(effectiveType)}. Only public, lawfully accessible sources are queried.
+      </p>
     </form>
   );
 }

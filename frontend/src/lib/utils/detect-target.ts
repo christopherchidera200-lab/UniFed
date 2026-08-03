@@ -48,6 +48,20 @@ export function isTargetType(value: string): value is TargetType {
   return (TARGET_TYPES as readonly string[]).includes(value);
 }
 
+const TYPE_PLACEHOLDERS: Record<TargetType, string> = {
+  domain: 'example.com',
+  ip: '8.8.8.8',
+  email: 'analyst@example.com',
+  username: 'octocat',
+};
+
+const TYPE_EXAMPLES: Record<TargetType, string> = {
+  domain: 'a domain such as example.com',
+  ip: 'a public IPv4 or IPv6 address',
+  email: 'an email address',
+  username: 'a username to check across public profiles',
+};
+
 const TARGET_LABELS: Record<TargetType, string> = {
   domain: 'Domain',
   ip: 'IP address',
@@ -57,4 +71,14 @@ const TARGET_LABELS: Record<TargetType, string> = {
 
 export function targetTypeLabel(type: TargetType): string {
   return TARGET_LABELS[type];
+}
+
+/** Placeholder seed appropriate to the active target type. */
+export function targetPlaceholder(type: TargetType): string {
+  return TYPE_PLACEHOLDERS[type];
+}
+
+/** Human description of what each type accepts, for the input hint. */
+export function targetExample(type: TargetType): string {
+  return TYPE_EXAMPLES[type];
 }
