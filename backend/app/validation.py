@@ -81,11 +81,31 @@ def validate_username(value: str) -> str:
     return username
 
 
+def validate_organization(value: str) -> str:
+    # An organization is anchored to its primary domain (e.g. "google.com"). We
+    # reuse domain normalization but keep the type distinct so the orchestrator
+    # routes to org-specific collectors rather than the generic domain set.
+    domain = normalize_domain(value)
+    if not domain:
+        raise InvalidTarget("Empty organization identifier")
+    try:
+        ipaddress.ip_address(domain)
+        raise InvalidTarget("That looks like an IP address — use target_type='ip'")
+    except ValueError:
+        pass
+    if domain.endswith(_BLOCKED_SUFFIXES) or domain.split(".")[0] in _BLOCKED_LABELS:
+        raise ForbiddenTarget("Internal/reserved namespaces are out of scope")
+    if not _DOMAIN_RE.match(domain):
+        raise InvalidTarget(f"'{value}' is not a valid organization domain")
+    return domain
+
+
 _VALIDATORS = {
     TargetType.DOMAIN: validate_domain,
     TargetType.IP: validate_ip,
     TargetType.EMAIL: validate_email,
     TargetType.USERNAME: validate_username,
+    TargetType.ORGANIZATION: validate_organization,
 }
 
 

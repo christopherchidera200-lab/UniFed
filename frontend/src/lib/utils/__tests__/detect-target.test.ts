@@ -46,7 +46,8 @@ describe('detectTargetType', () => {
 describe('isTargetType', () => {
   it('accepts known target types and rejects others', () => {
     expect(isTargetType('domain')).toBe(true);
-    expect(isTargetType('organization')).toBe(false);
+    expect(isTargetType('organization')).toBe(true);
+    expect(isTargetType('not-a-type')).toBe(false);
   });
 });
 

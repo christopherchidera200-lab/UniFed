@@ -28,3 +28,11 @@ async def test_streaming_lists_email_collectors():
     events = stream_investigation(request)
     first = await events.__anext__()
     assert set(first[1]["collectors"]) == {c.name for c in registry.for_type(TargetType.EMAIL)}
+
+
+async def test_streaming_lists_organization_collectors():
+    request = InvestigationRequest(target="google.com", target_type=TargetType.ORGANIZATION)
+    events = stream_investigation(request)
+    first = await events.__anext__()
+    expected = {c.name for c in registry.for_type(TargetType.ORGANIZATION)}
+    assert set(first[1]["collectors"]) == expected

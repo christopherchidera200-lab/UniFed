@@ -317,7 +317,8 @@
           "domain",
           "ip",
           "email",
-          "username"
+          "username",
+          "organization"
         ],
         "title": "TargetType",
         "type": "string"
@@ -516,6 +517,49 @@
           }
         ],
         "summary": "Create Investigation",
+        "tags": [
+          "investigations"
+        ]
+      }
+    },
+    "/investigations/stream": {
+      "post": {
+        "description": "Stream an investigation, emitting each collector's result as it settles.\n\nRationale: total latency is set by the slowest third-party source, so a blocking\nresponse makes fast collectors wait for slow ones. Streaming lets the UI paint\nDNS/TLS/HTTP in seconds while a slow source resolves in its own time.\n\nValidation runs BEFORE the response starts so a bad target still returns a real\n4xx. Once the stream is open the status line is already sent, so later failures\ncan only be reported in-band as an `error` event.",
+        "operationId": "create_investigation_stream_investigations_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestigationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {}
+            },
+            "description": "Server-Sent Event stream. Emits `started`, then one `collector` event per source in completion order, then `complete` with the scored result. An `error` event is emitted if the investigation fails after the stream has already opened."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Investigation Stream",
         "tags": [
           "investigations"
         ]

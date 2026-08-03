@@ -11,6 +11,7 @@ class TargetType(str, Enum):
     IP = "ip"
     EMAIL = "email"
     USERNAME = "username"
+    ORGANIZATION = "organization"
 
 
 class Severity(str, Enum):

@@ -7,7 +7,7 @@
  * surfacing as a runtime bug.
  */
 
-export const TARGET_TYPES = ['domain', 'ip', 'email', 'username'] as const;
+export const TARGET_TYPES = ['domain', 'ip', 'email', 'username', 'organization'] as const;
 export type TargetType = (typeof TARGET_TYPES)[number];
 
 export const SEVERITIES = ['info', 'low', 'medium', 'high'] as const;

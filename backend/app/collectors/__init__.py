@@ -9,6 +9,7 @@ from app.collectors.base import Collector, registry
 from app.collectors.dns_collector import DNSCollector
 from app.collectors.email_domain_collector import EmailDomainCollector
 from app.collectors.http_collector import HTTPFingerprintCollector
+from app.collectors.organization_collector import OrganizationCollector
 from app.collectors.rdap_collector import RDAPCollector
 from app.collectors.reverse_dns_collector import ReverseDNSCollector
 from app.collectors.subdomain_collector import SubdomainCollector
@@ -25,5 +26,6 @@ registry.register(WhoisCollector())
 registry.register(TLSCollector())
 registry.register(HTTPFingerprintCollector())
 registry.register(SubdomainCollector())
+registry.register(OrganizationCollector())
 
 __all__ = ["Collector", "registry"]

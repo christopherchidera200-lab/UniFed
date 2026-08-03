@@ -19,6 +19,7 @@ _EXPECTED = {
     TargetType.IP: {"rdap", "reverse-dns"},
     TargetType.EMAIL: {"email-domain"},
     TargetType.USERNAME: {"username-presence"},
+    TargetType.ORGANIZATION: {"organization"},
 }
 
 

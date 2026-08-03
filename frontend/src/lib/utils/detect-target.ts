@@ -53,6 +53,7 @@ const TYPE_PLACEHOLDERS: Record<TargetType, string> = {
   ip: '8.8.8.8',
   email: 'analyst@example.com',
   username: 'octocat',
+  organization: 'google.com',
 };
 
 const TYPE_EXAMPLES: Record<TargetType, string> = {
@@ -60,6 +61,7 @@ const TYPE_EXAMPLES: Record<TargetType, string> = {
   ip: 'a public IPv4 or IPv6 address',
   email: 'an email address',
   username: 'a username to check across public profiles',
+  organization: 'an organization by its primary domain (e.g. google.com)',
 };
 
 const TARGET_LABELS: Record<TargetType, string> = {
@@ -67,6 +69,7 @@ const TARGET_LABELS: Record<TargetType, string> = {
   ip: 'IP address',
   email: 'Email',
   username: 'Username',
+  organization: 'Organization',
 };
 
 export function targetTypeLabel(type: TargetType): string {

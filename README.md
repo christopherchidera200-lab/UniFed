@@ -6,9 +6,9 @@ Cloud-native OSINT aggregation SaaS. Legal, public-source intelligence in one da
 
 | Layer | State |
 |---|---|
-| Backend API | Domain **and** IP / email / username intelligence. Collectors: forward DNS, RDAP (registration), reverse DNS, email-domain, TLS, HTTP, subdomains, username-presence. Blocking **and** streaming. **93 tests passing.** |
-| Frontend | Design system, theming, typed API client, SSE client. **186 unit passing.** |
-| Investigation UI | **Phase 1 + target expansion complete** — streaming workspace at `/investigate` for all four target types. **36 e2e passing** (Chromium, WebKit, mobile Safari; mocked + one live-IP run). |
+| Backend API | Domains, IPs, emails, usernames, **and organizations**. Collectors: forward DNS, RDAP (registration), reverse DNS, email-domain, TLS, HTTP, subdomains, username-presence, **organization** (RDAP + Cymru ASN + network-owner graph). Blocking **and** streaming. **100 tests passing.** Persistence layer (DynamoDB + in-memory) already wired into both endpoints. |
+| Frontend | Design system, theming, typed API client, SSE client (5 target types). **186 unit passing.** |
+| Investigation UI | **Phase 1 + target expansion complete** — streaming workspace at `/investigate` for all five target types. **37 e2e passing** (Chromium, WebKit, mobile Safari; mocked + live IP/org runs). |
 
 ## Streaming
 
