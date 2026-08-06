@@ -11,9 +11,12 @@ module UniFed
   class Application < Rails::Application
     config.load_defaults 7.1
 
-    # DDD: isolate contexts; eager-load across engines.
-    config.autoload_paths << Rails.root.join("app/contexts")
-    config.eager_load_paths << Rails.root.join("app/contexts")
+    # DDD modular monolith: each context under app/contexts/<ctx> owns its
+    # models/services. Namespaces are defined explicitly by the context
+    # loaders (app/contexts/<ctx>/lib/<ctx>.rb, required at the top of this
+    # file) — so we ignore app/contexts in Zeitwerk to avoid inflection
+    # conflicts and let the explicit requires own those constants.
+    Rails.autoloaders.main.ignore(Rails.root.join("app/contexts"))
 
     # API-first: no default view rendering, JSON only.
     config.api_only = true
