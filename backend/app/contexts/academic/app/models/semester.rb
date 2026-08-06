@@ -1,5 +1,5 @@
 module Academic
-  class Semester < ApplicationRecord
+  class Semester < ::ApplicationRecord
     belongs_to :academic_session
     has_one  :university, through: :academic_session
     has_many :course_offerings, dependent: :destroy

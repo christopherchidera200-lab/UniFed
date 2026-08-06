@@ -1,5 +1,5 @@
 module Academic
-  class StudentEnrollment < ApplicationRecord
+  class StudentEnrollment < ::ApplicationRecord
     belongs_to :student
     belongs_to :programme
     belongs_to :academic_session

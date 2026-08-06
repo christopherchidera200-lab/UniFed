@@ -1,7 +1,7 @@
 module Academic
   # University / institution node. Each deployed instance owns exactly one
   # primary university record (the federation node it represents).
-  class University < ApplicationRecord
+  class University < ::ApplicationRecord
     has_many :faculties, dependent: :destroy
     has_many :academic_sessions, dependent: :destroy
     has_many :lecturers, dependent: :restrict_with_error

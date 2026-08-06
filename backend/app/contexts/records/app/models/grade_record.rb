@@ -1,7 +1,7 @@
 module Records
   # A grade entry for one student in one course offering.
   # NUC 5-point scale; letter bands are computed, not trusted from input.
-  class GradeRecord < ApplicationRecord
+  class GradeRecord < ::ApplicationRecord
     belongs_to :student, class_name: "Academic::Student"
     belongs_to :course_offering, class_name: "Academic::CourseOffering"
 

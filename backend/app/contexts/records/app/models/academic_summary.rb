@@ -1,7 +1,7 @@
 module Records
   # Per-session GPA and cumulative CGPA rollup (materialized).
   # Recomputed by AcademicSummaryService whenever a grade is published.
-  class AcademicSummary < ApplicationRecord
+  class AcademicSummary < ::ApplicationRecord
     belongs_to :student, class_name: "Academic::Student"
     belongs_to :academic_session, class_name: "Academic::AcademicSession", optional: true
 

@@ -1,5 +1,5 @@
 module Academic
-  class CourseOffering < ApplicationRecord
+  class CourseOffering < ::ApplicationRecord
     belongs_to :course
     belongs_to :academic_session
     belongs_to :lecturer, optional: true

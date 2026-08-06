@@ -1,5 +1,5 @@
 module Academic
-  class Faculty < ApplicationRecord
+  class Faculty < ::ApplicationRecord
     belongs_to :university
     has_many :departments, dependent: :destroy
 

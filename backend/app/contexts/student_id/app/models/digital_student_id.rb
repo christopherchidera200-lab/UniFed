@@ -2,7 +2,7 @@ module StudentId
   # A verifiable digital student ID. The token is a signed JWT (offline
   # scannable via QR). Only the SHA-256 hash of the raw token is stored
   # (privacy-by-design: token never at rest in cleartext).
-  class DigitalStudentId < ApplicationRecord
+  class DigitalStudentId < ::ApplicationRecord
     belongs_to :student, class_name: "Academic::Student"
     has_many :verification_logs, dependent: :destroy
 

@@ -1,5 +1,5 @@
 module Academic
-  class Course < ApplicationRecord
+  class Course < ::ApplicationRecord
     belongs_to :programme
     has_many :course_offerings, dependent: :destroy
 

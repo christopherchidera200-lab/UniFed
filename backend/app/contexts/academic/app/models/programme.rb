@@ -1,5 +1,5 @@
 module Academic
-  class Programme < ApplicationRecord
+  class Programme < ::ApplicationRecord
     belongs_to :department
     has_many :courses, dependent: :destroy
     has_many :student_enrollments, dependent: :restrict_with_error

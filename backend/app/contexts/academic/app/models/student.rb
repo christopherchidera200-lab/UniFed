@@ -1,7 +1,7 @@
 module Academic
   # Student academic record. PII (name, DOB, contact) lives in the Identity
   # context; this table holds only academic identity (matric) + linkage.
-  class Student < ApplicationRecord
+  class Student < ::ApplicationRecord
     belongs_to :university
     has_many :student_enrollments, dependent: :destroy
     has_many :programmes, through: :student_enrollments

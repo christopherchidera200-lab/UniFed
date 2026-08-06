@@ -1,6 +1,6 @@
 module Academic
   # Data-driven academic calendar root (ADR-0005). Never hardcode dates.
-  class AcademicSession < ApplicationRecord
+  class AcademicSession < ::ApplicationRecord
     belongs_to :university
     has_many :semesters, dependent: :destroy
     has_many :course_offerings, through: :semesters
