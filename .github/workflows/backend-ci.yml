@@ -15,28 +15,11 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16.4
-        env:
-          POSTGRES_USER: unifed
-          POSTGRES_PASSWORD: unifed
-          POSTGRES_DB: unifed_test
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd pg_isready --health-interval 10s
-          --health-timeout 5s --health-retries 5
-      redis:
-        image: redis:7.1-alpine
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 10s
-          --health-timeout 5s --health-retries 5
     env:
       RAILS_ENV: test
-      PGUSER: unifed
-      PGPASSWORD: unifed
-      DATABASE_URL: postgres://localhost:5432/unifed_test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/unifed_test
       REDIS_URL: redis://localhost:6379/0
       OIDC_JWKS_PRIVATE: ci-insecure-not-for-prod
     defaults:
@@ -44,15 +27,31 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL and Redis (native, no Docker service)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib redis-server
+          sudo systemctl start postgresql
+          sudo systemctl start redis-server
+          # create role + test database
+          sudo -u postgres psql -c "CREATE USER unifed WITH PASSWORD 'unifed' CREATEDB SUPERUSER;" || true
+          sudo -u postgres psql -c "CREATE DATABASE unifed_test OWNER unifed;" || true
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
-      - run: bundle exec rails db:test:prepare
+
+      - name: Rails DB prepare
+        run: bundle exec rails db:test:prepare
+
       - name: RuboCop
         run: bundle exec rubocop -f github || true
+
       - name: RSpec
         run: bundle exec rspec --format progress
+
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
