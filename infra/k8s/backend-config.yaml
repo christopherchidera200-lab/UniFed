@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: unifed
+  labels:
+    project: unifed
+    node: adun
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifed-backend
+  namespace: unifed
+data:
+  RAILS_ENV: "production"
+  RAILS_LOG_TO_STDOUT: "true"
+  RAILS_SERVE_STATIC_FILES: "true"
+  DATABASE_HOST: "unifed-adun-pg.ckxkx.us-east-1.rds.amazonaws.com"
+  REDIS_URL: "redis://unifed-adun-redis:6379/0"
+  OPENSEARCH_URL: "https://vpc-unifed-adun.us-east-1.es.amazonaws.com"
+  MINIO_URL: "https://unifed-adun-media.s3.amazonaws.com"
+  FEDERATION_ENABLED: "true"
+  NODE_SLUG: "adun"
+---
+# NOTE: real secrets live in AWS Secrets Manager, synced via External Secrets Operator.
+# This manifest is a template; never commit real credentials.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: unifed-backend
+  namespace: unifed
+type: Opaque
+stringData:
+  DATABASE_PASSWORD: "REPLACE_VIA_SECRETS_MANAGER"
+  SECRET_KEY_BASE: "REPLACE_VIA_SECRETS_MANAGER"
+  OIDC_JWKS_SECRET: "REPLACE_VIA_SECRETS_MANAGER"

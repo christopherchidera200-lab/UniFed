@@ -1,0 +1,29 @@
+# PostgreSQL (primary). Mirrors db/schema/adun_academic_model.sql.
+# Connection string via ENV (Twelve-Factor); never hardcode credentials.
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  port: 5432
+
+development:
+  <<: *default
+  database: unifed_dev
+  host: <%= ENV.fetch("DATABASE_HOST", "localhost") %>
+  username: <%= ENV.fetch("DATABASE_USER", "unifed") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "unifed") %>
+
+test:
+  <<: *default
+  database: unifed_test
+  host: <%= ENV.fetch("DATABASE_HOST", "localhost") %>
+  username: <%= ENV.fetch("DATABASE_USER", "unifed") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "unifed") %>
+
+production:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME", "unifed") %>
+  host: <%= ENV.fetch("DATABASE_HOST") %>
+  username: <%= ENV.fetch("DATABASE_USER") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") %>
+  sslmode: require
