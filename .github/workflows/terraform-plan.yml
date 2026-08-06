@@ -1,0 +1,29 @@
+name: terraform-plan
+
+on:
+  pull_request:
+    paths: ["infra/terraform/**"]
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.2"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: af-south-1
+      - run: terraform init -backend-config=ci.tfbackend
+      - run: terraform fmt -check
+      - run: terraform validate
+      - run: terraform plan -out=tfplan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: infra/terraform/tfplan

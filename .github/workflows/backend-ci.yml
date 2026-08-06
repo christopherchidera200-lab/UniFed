@@ -1,0 +1,81 @@
+name: backend-ci
+
+on:
+  push:
+    branches: [master, main]
+    paths: ["backend/**", ".github/workflows/backend-ci.yml"]
+  pull_request:
+    paths: ["backend/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4
+        env:
+          POSTGRES_USER: unifed
+          POSTGRES_PASSWORD: unifed
+          POSTGRES_DB: unifed_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7.1-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      RAILS_ENV: test
+      PGUSER: unifed
+      PGPASSWORD: unifed
+      DATABASE_URL: postgres://localhost:5432/unifed_test
+      REDIS_URL: redis://localhost:6379/0
+      OIDC_JWKS_PRIVATE: ci-insecure-not-for-prod
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - run: bundle exec rails db:test:prepare
+      - name: RuboCop
+        run: bundle exec rubocop -f github || true
+      - name: RSpec
+        run: bundle exec rspec --format progress
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: backend/coverage
+
+  security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Bundler audit
+        run: |
+          gem install bundler-audit
+          bundle audit --update
+      - name: Brakeman
+        run: |
+          gem install brakeman
+          brakeman -f plain
