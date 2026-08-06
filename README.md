@@ -88,3 +88,4 @@ cd frontend && npm install && npm run dev
 ## License
 
 Proprietary — UniFed Nigeria. Internal engineering use.
+
