@@ -1,15 +1,14 @@
 # Context loader for the Academic bounded context.
 # Explicitly requires models + services so the Academic:: namespace is
-# always available (deterministic, no reliance on Zeitwerk path mapping
-# for the nested app/contexts structure).
-require_relative "../../models/university"
-require_relative "../../models/faculty"
-require_relative "../../models/department"
-require_relative "../../models/programme"
-require_relative "../../models/course"
-require_relative "../../models/academic_session"
-require_relative "../../models/semester"
-require_relative "../../models/lecturer"
-require_relative "../../models/student"
-require_relative "../../models/student_enrollment"
-require_relative "../../models/course_offering"
+# always available. Paths are relative to this file (app/contexts/academic/lib).
+require_relative "../../app/models/university"
+require_relative "../../app/models/faculty"
+require_relative "../../app/models/department"
+require_relative "../../app/models/programme"
+require_relative "../../app/models/course"
+require_relative "../../app/models/academic_session"
+require_relative "../../app/models/semester"
+require_relative "../../app/models/lecturer"
+require_relative "../../app/models/student"
+require_relative "../../app/models/student_enrollment"
+require_relative "../../app/models/course_offering"

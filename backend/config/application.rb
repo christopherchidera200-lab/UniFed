@@ -2,10 +2,11 @@ require_relative "boot"
 
 require "rails/all"
 
-# Require the modular-monolith contexts (engines) explicitly.
-Dir.glob(File.expand_path("../app/contexts/*/lib/*.rb", __dir__)).sort.each { |f| require f }
+# NOTE: bounded-context namespaces (Academic::, Records::, StudentId::) are
+# required explicitly from spec/rails_helper.rb (and any runner) AFTER the
+# Rails environment boots, so ApplicationRecord is available. We intentionally
+# do NOT require them here at boot, to avoid loading models before AR is ready.
 
-Bundler.require(*Rails.groups)
 
 module UniFed
   class Application < Rails::Application

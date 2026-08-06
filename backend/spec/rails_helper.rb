@@ -1,7 +1,20 @@
 # Configure Rails Environment for testing
 ENV["RAILS_ENV"] = "test"
+
 require_relative "../config/environment"
 abort("The Rails environment is running in production mode!") if Rails.env.production?
+
+# Explicitly load the DDD bounded-context namespaces (Academic, Records,
+# StudentId) after the Rails environment is up. The context loaders live at
+# app/contexts/<ctx>/lib/<ctx>.rb and require their models/services. Loading
+# them after `config/environment` guarantees ApplicationRecord and the Rails
+# autoloading setup exist, so the context constants resolve deterministically.
+begin
+  Dir[Rails.root.join("app/contexts/*/lib/*.rb")].sort.each { |f| require f }
+rescue => e
+  $stderr.puts "CONTEXT LOAD ERROR: #{e.class}: #{e.message}"
+  raise
+end
 
 require "rspec/rails"
 require "factory_bot_rails"
