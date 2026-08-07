@@ -10,6 +10,13 @@ terraform {
       version = "~> 3.6"
     }
   }
+
+  # Local backend for CI validation (no remote state bucket required to run
+  # fmt/validate). For real deployments, override via -backend-config=ci.tfbackend
+  # or switch to an S3 backend with DynamoDB locking.
+  backend "local" {
+    path = "tfstate/ci.tfstate"
+  }
 }
 
 # AWS primary provider (ADUN reference node: af-south-1 — Cape Town, closest to Nigeria)
