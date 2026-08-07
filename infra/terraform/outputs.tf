@@ -12,11 +12,7 @@ output "rds_endpoint" {
 }
 
 output "redis_endpoint" {
-  value = module.elasticache.cache_cluster_address
-}
-
-output "opensearch_endpoint" {
-  value = module.opensearch.domain_endpoint
+  value = module.elasticache.cluster_address
 }
 
 output "media_bucket" {

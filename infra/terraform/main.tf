@@ -32,7 +32,7 @@ resource "aws_kms_key" "unifed" {
   description             = "UniFed ${var.node_slug} envelope encryption"
   deletion_window_in_days = 30
   enable_key_rotation     = true
-  tags = { Name = "unifed-${var.node_slug}-kms" }
+  tags                    = { Name = "unifed-${var.node_slug}-kms" }
 }
 
 # ---------------- RDS PostgreSQL (academic + identity data) ----------------
@@ -60,8 +60,8 @@ module "rds" {
   subnet_ids             = module.vpc.private_subnets
 
   backup_retention_period = 14
-  deletion_protection    = true
-  multi_az               = true
+  deletion_protection     = true
+  multi_az                = true
 
   depends_on = [module.vpc]
 }
@@ -71,36 +71,15 @@ module "elasticache" {
   source  = "terraform-aws-modules/elasticache/aws"
   version = "~> 1.5"
 
-  cluster_id           = "unifed-${var.node_slug}-redis"
-  engine               = "redis"
-  engine_version       = "7.1"
-  node_type            = "cache.r6g.large"
-  num_cache_clusters   = 2
-  subnet_ids          = module.vpc.private_subnets
-  security_group_ids   = [module.sg_redis.security_group_id]
-  kms_key_id           = aws_kms_key.unifed.arn
+  cluster_id                 = "unifed-${var.node_slug}-redis"
+  engine                     = "redis"
+  engine_version             = "7.1"
+  node_type                  = "cache.r6g.large"
+  num_cache_clusters         = 2
+  subnet_ids                 = module.vpc.private_subnets
+  security_group_ids         = [module.sg_redis.security_group_id]
   transit_encryption_enabled = true
   at_rest_encryption_enabled = true
-}
-
-# ---------------- OpenSearch (search) ----------------
-module "opensearch" {
-  source  = "terraform-aws-modules/opensearch/aws"
-  version = "~> 1.3"
-
-  domain_name    = "unifed-${var.node_slug}"
-  engine_version = "OpenSearch_2.15"
-  vpc_options = {
-    subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
-    security_group_ids = [module.sg_os.security_group_id]
-  }
-  cluster_config = {
-    instance_type  = "r6g.large.search"
-    instance_count = 2
-  }
-  encrypt_at_rest_kms_key_id = aws_kms_key.unifed.arn
-  node_to_node_encryption_enabled = true
-  enforce_https                 = true
 }
 
 # ---------------- S3 (media: avatars, docs, stream recordings) ----------------
@@ -147,7 +126,7 @@ module "eks" {
       min_size       = 2
       max_size       = 6
       desired_size   = 3
-      labels = { workload = "general" }
+      labels         = { workload = "general" }
     }
   }
 
@@ -175,12 +154,3 @@ module "sg_redis" {
   ]
 }
 
-module "sg_os" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.1"
-  name    = "unifed-${var.node_slug}-os"
-  vpc_id  = module.vpc.vpc_id
-  ingress_with_cidr_blocks = [
-    { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = var.vpc_cidr }
-  ]
-}

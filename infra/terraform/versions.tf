@@ -25,7 +25,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project   = "unifed"
-      Node      = var.node_slug          # e.g. "adun"
+      Node      = var.node_slug # e.g. "adun"
       ManagedBy = "terraform"
       Stage     = var.stage
     }

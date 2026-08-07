@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.10.0"
+          terraform_version: "1.15.2"
       # Local backend (ci.tfbackend) needs no cloud creds, so init/fmt/validate
       # run in CI without AWS. `terraform plan` requires real AWS credentials
       # and is run from a developer machine / a privileged deployment job.
