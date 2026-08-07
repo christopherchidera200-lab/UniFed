@@ -22,8 +22,7 @@ test:
 
 production:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME", "unifed") %>
-  host: <%= ENV.fetch("DATABASE_HOST") %>
-  username: <%= ENV.fetch("DATABASE_USER") %>
-  password: <%= ENV.fetch("DATABASE_PASSWORD") %>
+  # 12-factor: prefer DATABASE_URL; fall back to component ENV vars so the
+  # config is always valid (nil would crash db:test:prepare / db:create).
+  url: <%= ENV["DATABASE_URL"].presence || "postgres://#{ENV.fetch('DATABASE_USER','unifed')}:***@#{ENV.fetch('DATABASE_HOST','localhost')}:5432/#{ENV.fetch('DATABASE_NAME','unifed')}" %>
   sslmode: require

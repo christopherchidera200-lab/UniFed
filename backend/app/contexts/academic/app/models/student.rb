@@ -6,7 +6,8 @@ module Academic
     has_many :student_enrollments, dependent: :destroy
     has_many :programmes, through: :student_enrollments
     has_many :grade_records, dependent: :destroy
-    has_many :digital_student_ids, dependent: :destroy
+    has_many :academic_summaries, class_name: "Records::AcademicSummary", dependent: :destroy
+    has_many :digital_student_ids, class_name: "StudentId::DigitalStudentId", dependent: :destroy
 
     validates :matric_no, presence: true, uniqueness: { scope: :university_id }
     validates :entry_year, presence: true

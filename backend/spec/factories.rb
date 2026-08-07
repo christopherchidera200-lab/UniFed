@@ -1,8 +1,18 @@
 # == FactoryBot factories for the Academic + Records + StudentId contexts.
 # Only structural attributes are set; no invented institutional data.
+# Uniqueness-constrained fields use sequences so examples never collide
+# (the suite does not assume cross-example transaction rollback).
 FactoryBot.define do
+  sequence(:uni_slug) { |n| "adun#{n}" }
+  sequence(:faculty_code) { |n| "FOS#{n}" }
+  sequence(:dept_code) { |n| "CYB#{n}" }
+  sequence(:programme_code) { |n| "CYB-BSC#{n}" }
+  sequence(:course_code) { |n| "CYB #{300 + n}" }
+  sequence(:matric_no) { |n| "ADUN/FS/CYB/23/%03d" % n }
+  sequence(:token_hex) { |n| SecureRandom.hex(32) << n.to_s }
+
   factory :university, class: "Academic::University" do
-    slug { "adun" }
+    slug { generate(:uni_slug) }
     name { "Admiralty University of Nigeria" }
     short_name { "ADUN" }
     kind { "federal" }
@@ -13,20 +23,20 @@ FactoryBot.define do
 
   factory :faculty, class: "Academic::Faculty" do
     association :university
-    code { "FOS" }
+    code { generate(:faculty_code) }
     name { "Faculty of Science" }
     dean_name { nil }
   end
 
   factory :department, class: "Academic::Department" do
     association :faculty
-    code { "CYB" }
+    code { generate(:dept_code) }
     name { "Cyber Security" }
   end
 
   factory :programme, class: "Academic::Programme" do
     association :department
-    code { "CYB-BSC" }
+    code { generate(:programme_code) }
     name { "Cyber Security" }
     degree_type { "B.Sc" }
     duration_years { 4 }
@@ -34,7 +44,7 @@ FactoryBot.define do
 
   factory :course, class: "Academic::Course" do
     association :programme
-    code { "CYB 302" }
+    code { generate(:course_code) }
     title { "Network Security" }
     credit_units { 3 }
     level { 300 }
@@ -64,7 +74,7 @@ FactoryBot.define do
 
   factory :student, class: "Academic::Student" do
     association :university
-    matric_no { "ADUN/FS/CYB/23/003" }
+    matric_no { generate(:matric_no) }
     entry_year { 2023 }
     entry_mode { "UTME" }
     current_level { 300 }
@@ -87,7 +97,7 @@ FactoryBot.define do
 
   factory :digital_student_id, class: "StudentId::DigitalStudentId" do
     association :student
-    token_hash { SecureRandom.hex(32) }
+    token_hash { generate(:token_hex) }
     qr_payload { {} }
     status { "active" }
     issued_at { Time.current }

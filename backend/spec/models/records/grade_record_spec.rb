@@ -18,6 +18,9 @@ RSpec.describe Records::GradeRecord, type: :model do
       70 => ["A", 5.0], 60 => ["B", 4.0], 50 => ["C", 3.0],
       45 => ["D", 2.0], 40 => ["E", 1.0], 39 => ["F", 0.0]
     }.each do |score, (letter, point)|
+      # A distinct offering (own academic session) per band so the
+      # course_offering (course, session, semester) uniqueness is respected.
+      offering = create(:course_offering, course: course, academic_session: create(:academic_session))
       g = described_class.create!(student: student, course_offering: offering, score: score)
       expect([g.grade_letter, g.grade_point]).to eq([letter, point])
     end
@@ -37,7 +40,7 @@ RSpec.describe Records::GradeRecord, type: :model do
   it "exposes published records only" do
     published = described_class.create!(student: student, course_offering: offering, score: 70, is_published: true)
     described_class.create!(student: student,
-      course_offering: create(:course_offering, course: course, academic_session: session),
+      course_offering: create(:course_offering, course: course, academic_session: create(:academic_session)),
       score: 70, is_published: false)
     expect(described_class.published_for(student)).to contain_exactly(published)
   end

@@ -4,7 +4,7 @@ module StudentId
   # (privacy-by-design: token never at rest in cleartext).
   class DigitalStudentId < ::ApplicationRecord
     belongs_to :student, class_name: "Academic::Student"
-    has_many :verification_logs, dependent: :destroy
+    has_many :verification_logs, class_name: "StudentId::IdVerificationLog", dependent: :destroy
 
     validates :token_hash, presence: true, uniqueness: true
     validates :status, inclusion: { in: %w[active revoked expired] }

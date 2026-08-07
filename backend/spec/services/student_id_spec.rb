@@ -27,7 +27,7 @@ RSpec.describe StudentId::IdVerificationService, type: :service do
   let(:student)    { create(:student, university: university) }
 
   it "verifies a valid, active, unexpired token and logs success" do
-    token = described_class.issue!(student, issued_by: "staff-123")[:token]
+    token = StudentId::IdIssuanceService.issue!(student, issued_by: "staff-123")[:token]
     outcome = described_class.verify!(token, verifier_actor: "guard-1", ip: "10.0.0.1")
     expect(outcome[:valid]).to be true
     expect(outcome[:student]).to eq(student)
@@ -35,14 +35,14 @@ RSpec.describe StudentId::IdVerificationService, type: :service do
   end
 
   it "rejects a tampered token" do
-    token = described_class.issue!(student, issued_by: "staff-123")[:token]
+    token = StudentId::IdIssuanceService.issue!(student, issued_by: "staff-123")[:token]
     outcome = described_class.verify!("garbage.token.value", verifier_actor: "guard-1")
     expect(outcome[:valid]).to be false
     expect(outcome[:reason]).to eq("invalid_token")
   end
 
   it "rejects a revoked ID" do
-    issued = described_class.issue!(student, issued_by: "staff-123")
+    issued = StudentId::IdIssuanceService.issue!(student, issued_by: "staff-123")
     issued[:digital_id].revoke!(by: "admin")
     outcome = described_class.verify!(issued[:token], verifier_actor: "guard-1")
     expect(outcome[:valid]).to be false

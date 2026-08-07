@@ -26,9 +26,13 @@ module UniFed
     config.force_ssl = true
     config.action_dispatch.cookies_same_site_protection = :strict
 
-    # Twelve-factor: logs to stdout.
-    config.lograge.enabled = true
-    config.lograge.formats = [:json]
+    # Twelve-factor: logs to stdout. Use lograge for structured JSON request
+    # logs when the gem is available (it registers config.lograge via its
+    # railtie); guard so a missing/optional lograge doesn't crash boot.
+    if config.respond_to?(:lograge)
+      config.lograge.enabled = true
+      config.lograge.formats = [:json]
+    end
 
     # OIDC issuer for this node (per-deployment override via ENV).
     config.x.oidc_issuer = ENV.fetch("OIDC_ISSUER", "https://adun.unifed.ng")

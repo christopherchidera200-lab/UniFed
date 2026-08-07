@@ -120,7 +120,7 @@ CREATE INDEX idx_sessions_uni ON academic_sessions(university_id);
 -- =============================================================================
 CREATE TABLE semesters (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    session_id          UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE CASCADE,
+    academic_session_id          UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE CASCADE,
     number              SMALLINT NOT NULL CHECK (number IN (1,2)),
     lecture_start       DATE NOT NULL,
     lecture_end         DATE NOT NULL CHECK (lecture_end >= lecture_start),
@@ -132,9 +132,9 @@ CREATE TABLE semesters (
     break_end           DATE,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (session_id, number)
+    UNIQUE (academic_session_id, number)
 );
-CREATE INDEX idx_semesters_session ON semesters(session_id);
+CREATE INDEX idx_semesters_session ON semesters(academic_session_id);
 
 -- =============================================================================
 -- 8. LECTURER
@@ -142,7 +142,6 @@ CREATE INDEX idx_semesters_session ON semesters(session_id);
 CREATE TABLE lecturers (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     university_id   UUID NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
-    staff_id        TEXT,                                 -- WARNING: official scheme pending
     full_name       TEXT NOT NULL,
     department_id   UUID REFERENCES departments(id) ON DELETE SET NULL,
     title           TEXT,                                 -- 'Dr','Prof'
@@ -178,10 +177,10 @@ CREATE TABLE student_enrollments (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id      UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     programme_id    UUID NOT NULL REFERENCES programmes(id) ON DELETE RESTRICT,
-    session_id      UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE RESTRICT,
+    academic_session_id      UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE RESTRICT,
     is_primary      BOOLEAN NOT NULL DEFAULT true,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (student_id, programme_id, session_id)
+    UNIQUE (student_id, programme_id, academic_session_id)
 );
 CREATE INDEX idx_enroll_student ON student_enrollments(student_id);
 
@@ -191,14 +190,14 @@ CREATE INDEX idx_enroll_student ON student_enrollments(student_id);
 CREATE TABLE course_offerings (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id       UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-    session_id      UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE CASCADE,
+    academic_session_id      UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE CASCADE,
     semester_number SMALLINT NOT NULL CHECK (semester_number IN (1,2)),
     lecturer_id     UUID REFERENCES lecturers(id) ON DELETE SET NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (course_id, session_id, semester_number)
+    UNIQUE (course_id, academic_session_id, semester_number)
 );
-CREATE INDEX idx_offerings_session ON course_offerings(session_id);
+CREATE INDEX idx_offerings_session ON course_offerings(academic_session_id);
 CREATE INDEX idx_offerings_lecturer ON course_offerings(lecturer_id);
 
 -- =============================================================================
@@ -226,13 +225,13 @@ CREATE INDEX idx_grades_offering ON grade_records(course_offering_id);
 CREATE TABLE academic_summaries (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id      UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    session_id      UUID REFERENCES academic_sessions(id) ON DELETE SET NULL,
+    academic_session_id      UUID REFERENCES academic_sessions(id) ON DELETE SET NULL,
     total_credits   NUMERIC(6,2) NOT NULL DEFAULT 0,
     gpa             NUMERIC(4,2),                         -- per-session
     cgpa            NUMERIC(4,2),                         -- cumulative
     class_of_degree TEXT,                                -- First Class, 2:1, ...
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (student_id, session_id)
+    UNIQUE (student_id, academic_session_id)
 );
 CREATE INDEX idx_summaries_student ON academic_summaries(student_id);
 
@@ -257,14 +256,14 @@ CREATE INDEX idx_dsid_student ON digital_student_ids(student_id);
 -- Verification audit log (privacy-by-design: who verified, when, result)
 CREATE TABLE id_verification_logs (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    digital_id_id   UUID NOT NULL REFERENCES digital_student_ids(id) ON DELETE CASCADE,
+    digital_student_id_id   UUID NOT NULL REFERENCES digital_student_ids(id) ON DELETE CASCADE,
     verifier_actor  TEXT NOT NULL,                        -- URI or 'self'
     result          BOOLEAN NOT NULL,
     verified_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     ip_address      INET,
     user_agent      TEXT
 );
-CREATE INDEX idx_verify_log_id ON id_verification_logs(digital_id_id);
+CREATE INDEX idx_verify_log_id ON id_verification_logs(digital_student_id_id);
 
 -- =============================================================================
 -- 13. EVENT (ADUN gap-filler: the empty event calendar)

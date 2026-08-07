@@ -25,9 +25,11 @@ module Records
       published
         .joins(course_offering: { course: :programme })
         .group("course_offerings.academic_session_id")
-        .select("course_offerings.academic_session_id AS sid",
-                "SUM(grade_records.grade_point * courses.credit_units) / SUM(courses.credit_units) AS gpa",
-                "SUM(courses.credit_units) AS credits")
+        .select(
+          "course_offerings.academic_session_id AS sid",
+          Arel.sql("SUM(grade_records.grade_point * courses.credit_units) / SUM(courses.credit_units) AS gpa"),
+          Arel.sql("SUM(courses.credit_units) AS credits")
+        )
         .each do |row|
           upsert_summary(session_id: row.sid, gpa: row.gpa, credits: row.credits)
         end
@@ -35,13 +37,15 @@ module Records
 
     # Cumulative CGPA across all sessions.
     def cumulative_summary
-      agg = published
-            .joins(course_offering: { course: :programme })
-            .select("SUM(grade_records.grade_point * courses.credit_units) / SUM(courses.credit_units) AS cgpa",
-                    "SUM(courses.credit_units) AS credits")
-            .first
-      return if agg.nil? || agg.cgpa.nil?
-      upsert_summary(session_id: nil, gpa: nil, credits: agg.credits, cgpa: agg.cgpa)
+      cgpa, credits = published
+        .joins(course_offering: { course: :programme })
+        .pluck(
+          Arel.sql("SUM(grade_records.grade_point * courses.credit_units) / NULLIF(SUM(courses.credit_units), 0)"),
+          Arel.sql("SUM(courses.credit_units)")
+        )
+        .first
+      return if cgpa.nil? || credits.nil?
+      upsert_summary(session_id: nil, gpa: nil, credits: credits, cgpa: cgpa)
     end
 
     def published
