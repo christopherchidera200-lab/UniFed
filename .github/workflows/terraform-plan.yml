@@ -18,19 +18,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.15.2"
-      - uses: aws-actions/configure-aws-credentials@v4
-        if: ${{ secrets.AWS_ROLE_ARN != '' }}
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: af-south-1
+          terraform_version: "1.10.0"
+      # Local backend (ci.tfbackend) needs no cloud creds, so init/fmt/validate
+      # run in CI without AWS. `terraform plan` requires real AWS credentials
+      # and is run from a developer machine / a privileged deployment job.
       - run: terraform init -backend-config=ci.tfbackend
       - run: terraform fmt -check
       - run: terraform validate
-      - run: terraform plan -out=tfplan
-        if: ${{ secrets.AWS_ROLE_ARN != '' }}
-      - uses: actions/upload-artifact@v4
-        if: ${{ secrets.AWS_ROLE_ARN != '' }}
-        with:
-          name: tfplan
-          path: infra/terraform/tfplan
