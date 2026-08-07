@@ -1,6 +1,7 @@
 name: terraform-plan
 
 on:
+  workflow_dispatch:
   pull_request:
     paths: ["infra/terraform/**"]
 
