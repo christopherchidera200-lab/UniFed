@@ -46,7 +46,7 @@ jobs:
 
       - name: Load schema (psql, deterministic - no rails needed)
         run: |
-          sudo -u postgres psql -d unifed_test -f db/schema/adun_academic_model.sql
+          sudo -u postgres psql -d unifed_test -f ../db/schema/adun_academic_model.sql
 
       - name: RuboCop
         run: bundle exec rubocop -f github || true
