@@ -1,6 +1,3 @@
-import type { ReactNode } from "react";
-import type { ReactElement } from "react";
-
 /** Typed API client for the UniFed Rails backend (slice-1 endpoints). */
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://api.unifed.ng";
 
@@ -35,7 +32,3 @@ export const unifedApi = {
   summary: (studentId: string, token: string) =>
     authedFetch<SummaryDTO>(`/api/v1/academic/students/${studentId}/summary`, token)
 };
-
-export function withLayout(page: ReactNode): ReactElement {
-  return <>{page}</>;
-}
