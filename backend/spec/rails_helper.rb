@@ -12,10 +12,15 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require Rails.root.join("app/models/application_record")
 Dir[Rails.root.join("app/contexts/*/lib/*.rb")].sort.each { |f| require f }
 
-# Establish ONE test connection and make every model use it. This app boots on
-# a non-standard Ruby where repeated establish_connection/reconnect calls can
-# spawn divergent pools; pinning a single connection here keeps the spec's
-# queries and the cleanup truncation on the same pool.
+# Explicitly load the database configuration. On this non-standard Ruby the
+# minimal `config/environment` boot does not reliably populate
+# ActiveRecord::Base.configurations (and database.yml uses ERB, which plain
+# YAML parsing does not evaluate), so we load it ourselves: run ERB, parse
+# YAML, register the config, then establish the single test connection.
+require "erb"
+db_raw = ERB.new(File.read(Rails.root.join("config/database.yml"))).result
+db_hash = YAML.safe_load(db_raw, aliases: true, permitted_classes: [Symbol])
+ActiveRecord::Base.configurations = ActiveRecord::DatabaseConfigurations.new(db_hash)
 ActiveRecord::Base.connection_pool.disconnect! if ActiveRecord::Base.connected?
 ActiveRecord::Base.establish_connection(:test)
 
