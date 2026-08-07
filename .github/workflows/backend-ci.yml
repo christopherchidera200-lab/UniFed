@@ -44,8 +44,9 @@ jobs:
       - name: Bundle install (generates Gemfile.lock)
         run: bundle install --jobs 4
 
-      - name: Rails DB migrate (applies migration = source of truth)
-        run: bundle exec rails db:migrate
+      - name: Load schema (psql, deterministic - no rails needed)
+        run: |
+          sudo -u postgres psql -d unifed_test -f db/schema/adun_academic_model.sql
 
       - name: RuboCop
         run: bundle exec rubocop -f github || true
