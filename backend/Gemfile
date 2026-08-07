@@ -1,0 +1,52 @@
+source "https://rubygems.org"
+
+ruby ">= 3.3.0"
+
+# ---- Web / API ----
+gem "rails", ">= 7.1"               # resolved to 8.x; modular monolith + API-only
+gem "puma", "~> 6.4"
+gem "rack-cors"
+gem "jbuilder"
+
+# ---- Database ----
+gem "pg", "~> 1.5"
+gem "sequel", "~> 5.80"             # read-optimized queries alongside AR
+gem "redis", "~> 5.2"
+
+# ---- Auth / Identity (ADR-0004) ----
+gem "jwt", "~> 2.8"                 # OIDC bearer verification
+gem "bcrypt", "~> 3.1"              # legacy fallback
+gem "argon2", "~> 2.3"              # password hashing (ADR-0004)
+gem "rotp", "~> 6.3"                # TOTP MFA
+gem "webauthn", "~> 3.0"            # WebAuthn / FIDO2
+
+# ---- Federation (ADR-0003) ----
+# Full federation worker is M2; deps declared now so the context can verify
+# peer signatures / JSON-LD when built.
+gem "http_signatures", "~> 1.1"     # ActivityPub HTTP Signatures
+gem "json-ld", "~> 3.3"             # JSON-LD
+gem "json-ld-preloaded", "~> 3.3"
+
+# ---- API docs / validation ----
+gem "dry-validation", "~> 1.10"
+gem "dry-struct", "~> 1.6"
+
+# ---- Observability ----
+gem "opentelemetry-sdk", "~> 1.4"
+gem "opentelemetry-exporter-otlp", "~> 0.26"
+gem "lograge", "~> 0.14"            # structured request logs
+
+# ---- Search ----
+gem "opensearch-ruby", "~> 3.0"
+
+# ---- Jobs / events ----
+gem "sidekiq", "~> 7.2"
+
+# ---- Testing (not in production bundle) ----
+group :development, :test do
+  gem "rspec-rails", "~> 6.1"
+  gem "factory_bot_rails", "~> 6.4"
+  gem "database_cleaner-active_record", "~> 2.1"
+  gem "rubocop-rails", "~> 2.25"
+  gem "simplecov", "~> 0.22"
+end

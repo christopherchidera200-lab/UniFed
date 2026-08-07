@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: UniFed Nigeria API - Vertical Slice 1 (Academic Records & Digital Student ID)
+  version: 0.1.0-m1
+  description: |
+    M1 vertical slice. All endpoints require a valid OIDC bearer token
+    (ADR-0004). Authorization is role + owning-university scoped.
+servers:
+  - url: https://api.unifed.ng
+    description: Production (ADUN reference node)
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Student:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        matric_no: { type: string, example: "ADUN/FS/CYB/23/003" }
+        entry_year: { type: integer }
+        entry_mode: { type: string, enum: [UTME, DE] }
+        current_level: { type: integer }
+        status: { type: string, enum: [active, graduated, suspended, withdrawn, leave] }
+    GradeRecord:
+      type: object
+      properties:
+        course_code: { type: string }
+        score: { type: number }
+        grade_letter: { type: string }
+        grade_point: { type: number }
+        is_published: { type: boolean }
+    AcademicSummary:
+      type: object
+      properties:
+        session: { type: string }
+        gpa: { type: number }
+        cgpa: { type: number }
+        class_of_degree: { type: string }
+    DigitalStudentId:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string }
+        issued_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        qr_payload: { type: object }
+paths:
+  /academic/students/{id}:
+    get:
+      summary: Get a student academic profile (role + ownership scoped)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Student, content: { application/json: { schema: { $ref: '#/components/schemas/Student' } } } }
+        '403': { description: Not authorized for this university }
+        '404': { description: Not found }
+  /academic/students/{id}/records:
+    get:
+      summary: List published grade records for a student
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Grade records, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/GradeRecord' } } } } }
+  /academic/students/{id}/summary:
+    get:
+      summary: Get GPA/CGPA transcript summary
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Summary, content: { application/json: { schema: { $ref: '#/components/schemas/AcademicSummary' } } } }
+  /student-id/{studentId}/issue:
+    post:
+      summary: Issue a new digital student ID (staff/admin only)
+      parameters:
+        - { name: studentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Issued, content: { application/json: { schema: { $ref: '#/components/schemas/DigitalStudentId' } } } }
+  /student-id/verify:
+    post:
+      summary: Verify a digital student ID token (offline-friendly scan)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { token: { type: string } } }
+      responses:
+        '200': { description: Verification result, content: { application/json: { schema: { type: object, properties: { valid: { type: boolean }, student: { $ref: '#/components/schemas/Student' } } } } } }
