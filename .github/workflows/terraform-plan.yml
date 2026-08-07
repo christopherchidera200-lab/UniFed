@@ -1,6 +1,6 @@
 name: terraform-plan
 
-"on":
+on:
   workflow_dispatch:
   push:
     branches: [master, main]
