@@ -12,6 +12,14 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require Rails.root.join("app/models/application_record")
 Dir[Rails.root.join("app/contexts/*/lib/*.rb")].sort.each { |f| require f }
 
+# Observability support (app/services/observability) is not under an autoload
+# path and its initializer is skipped on this non-standard boot, so require it
+# explicitly. Mirrors config/initializers/observability.rb for the test path.
+require Rails.root.join("app/services/observability/metrics")
+require Rails.root.join("lib/metrics_middleware")
+require Rails.root.join("lib/secure_headers_middleware")
+require Rails.root.join("lib/rate_limit_middleware")
+
 # Explicitly load the database configuration. On this non-standard Ruby the
 # minimal `config/environment` boot does not reliably populate
 # ActiveRecord::Base.configurations (and database.yml uses ERB, which plain
@@ -23,6 +31,32 @@ db_hash = YAML.safe_load(db_raw, aliases: true, permitted_classes: [Symbol])
 ActiveRecord::Base.configurations = ActiveRecord::DatabaseConfigurations.new(db_hash)
 ActiveRecord::Base.connection_pool.disconnect! if ActiveRecord::Base.connected?
 ActiveRecord::Base.establish_connection(:test)
+
+# The minimal boot path above skips Rails.application.initialize!, so the
+# Rails logger is never set up (production boots fine via initialize!). Request
+# specs call `get`, which logs through a nil logger and raises. Provide a
+# fallback stdout logger for the test environment only.
+unless Rails.logger
+  Rails.logger = ActiveSupport::Logger.new($stdout)
+  Rails.application.config.logger = Rails.logger if Rails.application.config.respond_to?(:logger)
+end
+
+# The minimal boot path skips Rails.application.initialize!, which (a) draws
+# config/routes.rb and (b) initializes + populates Zeitwerk's autoload paths.
+# Without it the router is empty (every request 404s) and app/* are not
+# autoloaded. Register the standard dirs then set up the autoloader, and draw
+# routes here for the test environment; production boots via initialize!.
+begin
+  %w[app/controllers app/controllers/concerns app/models app/models/concerns app/services].each do |d|
+    Rails.autoloaders.main.push_dir(Rails.root.join(d)) if Rails.root.join(d).exist?
+  end
+  Rails.autoloaders.each(&:setup)
+rescue StandardError
+  nil
+end
+if Rails.application.routes.respond_to?(:draw) && Rails.application.routes.routes.empty?
+  load Rails.root.join("config/routes.rb")
+end
 
 require "rspec/rails"
 require "factory_bot_rails"

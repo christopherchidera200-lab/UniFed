@@ -1,4 +1,13 @@
 Rails.application.routes.draw do
+  # ---- Phase 0 hardening: Observability ----
+  get "metrics", to: "metrics#show"
+
+  # ---- Phase 0 hardening: OIDC issuer (root scope, not under /api/v1) ----
+  get ".well-known/openid-configuration", to: "oidc#configuration"
+  get ".well-known/jwks.json", to: "oidc#jwks"
+  post "oauth/token", to: "oidc#token"
+  get  "oauth/userinfo", to: "oidc#userinfo"
+
   namespace :api do
     namespace :v1 do
       # Health + readiness probe for K8s.

@@ -5,4 +5,7 @@ Rails.application.configure do
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"] == "true"
   config.lograge.enabled = true
   config.log_level = :info
+
+  # Secure-by-default: enforce HTTPS in production.
+  config.force_ssl = true
 end

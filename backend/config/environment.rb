@@ -8,9 +8,8 @@ module UniFed
   class Application < Rails::Application
     config.load_defaults 7.1
     config.api_only = true
-    config.autoload_paths << Rails.root.join("app/contexts")
-    config.eager_load_paths << Rails.root.join("app/contexts")
-    config.force_ssl = true
+    # NOTE: app/contexts is ignored by Zeitwerk (see application.rb) and its
+    # constants are required explicitly by the context loaders / rails_helper.
     config.action_dispatch.cookies_same_site_protection = :strict
     config.lograge.enabled = true
     config.lograge.formats = [:json]

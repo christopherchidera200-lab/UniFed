@@ -22,8 +22,9 @@ module UniFed
     # API-first: no default view rendering, JSON only.
     config.api_only = true
 
-    # Secure-by-default.
-    config.force_ssl = true
+    # Secure-by-default: SSL is enforced in production only (see production.rb).
+    # Setting it here (globally) would also force it in test, redirecting every
+    # request spec to https://www.example.com and breaking request tests.
     config.action_dispatch.cookies_same_site_protection = :strict
 
     # Twelve-factor: logs to stdout. Use lograge for structured JSON request
