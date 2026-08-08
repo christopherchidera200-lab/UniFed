@@ -103,4 +103,72 @@ FactoryBot.define do
     issued_at { Time.current }
     expires_at { 1.year.from_now }
   end
+
+  # ---- Phase 0: Identity / RBAC / Audit / NDPA ----
+  factory :identity_user, class: "Identity::User" do
+    association :university
+    email { "user#{SecureRandom.hex(4)}@adun.edu.ng" }
+    username { "user_#{SecureRandom.hex(4)}" }
+    display_name { "Test User" }
+    actor_type { "student" }
+    status { "active" }
+
+    after(:create) do |user, evaluator|
+      next if evaluator.skip_password
+      user.credentials.create!(
+        kind: "password",
+        secret_enc: Identity::Credential.hash_password(evaluator.password)
+      )
+    end
+
+    transient do
+      password { "Sup3rSecret!" }
+      skip_password { false }
+    end
+  end
+
+  factory :identity_role, class: "Identity::Role" do
+    association :university
+    name { "student" }
+    permissions { ["academic:read"] }
+  end
+
+  factory :identity_mfa_device, class: "Identity::MfaDevice" do
+    association :user, factory: :identity_user
+    kind { "totp" }
+    label { "Authenticator" }
+    confirmed { true }
+    secret_enc { Identity::MfaService.encrypt(ROTP::Base32.random_base32) }
+  end
+
+  factory :identity_audit_log, class: "Identity::AuditLog" do
+    association :university
+    action { "auth.login" }
+    actor_type { "user" }
+  end
+
+  factory :identity_credential, class: "Identity::Credential" do
+    association :user, factory: :identity_user
+    kind { "password" }
+    secret_enc { Identity::Credential.hash_password("Sup3rSecret!") }
+  end
+
+  factory :identity_session, class: "Identity::Session" do
+    association :user, factory: :identity_user
+    jti { SecureRandom.hex(16) }
+    refresh_jti { SecureRandom.hex(16) }
+    expired_at { 30.days.from_now }
+  end
+
+  factory :identity_role_assignment, class: "Identity::RoleAssignment" do
+    association :user, factory: :identity_user
+    association :role, factory: :identity_role
+    scope_type { "university" }
+  end
+
+  factory :identity_consent_record, class: "Identity::ConsentRecord" do
+    association :user, factory: :identity_user
+    purpose { "health_wellbeing" }
+    granted { true }
+  end
 end

@@ -1,0 +1,15 @@
+# Context loader for the Identity bounded context (Phase 0).
+# Owns authentication, MFA, sessions, RBAC, audit, and NDPA consent.
+require_relative "../app/models/identity/user"
+require_relative "../app/models/identity/credential"
+require_relative "../app/models/identity/mfa_device"
+require_relative "../app/models/identity/session"
+require_relative "../app/models/identity/role"
+require_relative "../app/models/identity/role_assignment"
+require_relative "../app/models/identity/audit_log"
+require_relative "../app/models/identity/consent_record"
+require_relative "../app/services/identity/token_service"
+require_relative "../app/services/identity/password_auth_service"
+require_relative "../app/services/identity/mfa_service"
+require_relative "../app/services/identity/audit_service"
+require_relative "../app/services/identity/role_service"
