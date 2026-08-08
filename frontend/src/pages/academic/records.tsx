@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { GraduationCap } from "lucide-react";
 import { unifedApi } from "@/lib/api";
+import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
 
-/** Slice-1 screen: a student's academic records + CGPA summary.
- *  Mobile-first, accessible, premium. Token would come from the OIDC session. */
+/** Slice-1 screen: a student's academic records + CGPA summary. */
 export default function AcademicRecordsPage() {
-  const token = ""; // resolved from auth context in production
-  const studentId = ""; // from route / selected student
+  const token = "";
+  const studentId = "";
 
   const records = useQuery({
     queryKey: ["records", studentId],
@@ -19,19 +20,24 @@ export default function AcademicRecordsPage() {
   });
 
   return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Academic Records</h1>
-        <p className="text-ink-muted text-sm">
-          {summary.data?.matric_no ?? "—"} · CGPA{" "}
-          <span className="font-semibold text-saffron-600">
-            {summary.data?.cgpa?.toFixed(2) ?? "—"}
-          </span>
-        </p>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Academic Records"
+        eyebrow={`${summary.data?.matric_no ?? "—"} · CGPA `}
+        action={
+          <IconBadge className="bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
+            <GraduationCap size={18} />
+          </IconBadge>
+        }
+      />
+      <p className="-mt-3 text-ink-muted text-sm">
+        Cumulative GPA{" "}
+        <span className="font-semibold text-saffron-600">
+          {summary.data?.cgpa?.toFixed(2) ?? "—"}
+        </span>
+      </p>
 
-      <div className="rounded-lg border border-navy-100 dark:border-navy-800 bg-white
-                      dark:bg-navy-900/60 shadow-soft overflow-hidden">
+      <Card className="overflow-hidden p-0">
         <table className="w-full text-sm">
           <thead className="text-ink-muted">
             <tr className="border-b border-navy-100 dark:border-navy-800">
@@ -60,7 +66,7 @@ export default function AcademicRecordsPage() {
         {records.data?.length === 0 && (
           <p className="p-3 text-ink-muted text-sm">No published results yet.</p>
         )}
-      </div>
-    </section>
+      </Card>
+    </div>
   );
 }

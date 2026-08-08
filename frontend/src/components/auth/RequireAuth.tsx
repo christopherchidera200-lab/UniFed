@@ -1,11 +1,18 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { isAuthed } from "@/lib/auth";
 
-/** Guards a page: if there is no OIDC session, show a login prompt instead of
- *  the (always-unauthenticated) content. Keeps the mandated 5-tab nav intact. */
+/** Guards a page: once mounted on the client, if there is no OIDC session it
+ *  shows a login prompt instead of the (always-unauthenticated) content.
+ *  Uses a `mounted` flag so server and first client render match (no
+ *  hydration mismatch). Keeps the mandated 5-tab nav intact. */
 export function RequireAuth({ children }: { children: ReactNode }) {
-  if (typeof window !== "undefined" && !isAuthed()) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  if (!isAuthed()) {
     return (
       <section className="space-y-4 py-8 text-center">
         <h1 className="font-display text-xl font-bold">Sign in to continue</h1>

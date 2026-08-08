@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { unifedApi, getToken } from "@/lib/api";
+import { BookOpen, Briefcase, Library, CalendarDays, Sparkles } from "lucide-react";
+import { unifedApi, getToken, type EventDTO } from "@/lib/api";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
+import { cn } from "@/lib/cn";
 
-/** Home dashboard (Phase 2). Greeting + quick stats + shortcuts to the
- *  surfaces the student actually uses. Mobile-first, token-aligned. */
+/** Home dashboard (Phase 2). Bento-style: greeting, stat tiles, shortcut
+ *  grid, upcoming events. Mobile-first, navy/saffron, lucide icons. */
 export default function HomePage() {
   const token = getToken();
 
-  // Lightweight live signals (best-effort; degrade gracefully if offline).
   const courses = useQuery({
     queryKey: ["home-courses"],
     queryFn: () => unifedApi.catalogCourses(token),
     enabled: Boolean(token)
   });
-  const events = useQuery({
+  const events = useQuery<EventDTO[]>({
     queryKey: ["home-events"],
     queryFn: () => unifedApi.events(token),
     enabled: Boolean(token)
@@ -27,71 +29,79 @@ export default function HomePage() {
   ];
 
   const shortcuts = [
-    { href: "/catalog", label: "Catalogue", glyph: "📚", tint: "bg-navy-100 dark:bg-navy-800" },
-    { href: "/career", label: "Careers", glyph: "💼", tint: "bg-saffron-100 dark:bg-saffron-900/40" },
-    { href: "/library", label: "Library", glyph: "📖", tint: "bg-navy-100 dark:bg-navy-800" },
-    { href: "/events", label: "Events", glyph: "📅", tint: "bg-saffron-100 dark:bg-saffron-900/40" }
+    { href: "/catalog", label: "Catalogue", icon: BookOpen, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300" },
+    { href: "/career", label: "Careers", icon: Briefcase, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300" },
+    { href: "/library", label: "Library", icon: Library, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300" },
+    { href: "/events", label: "Events", icon: CalendarDays, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300" }
   ];
 
   return (
     <RequireAuth>
-      <section className="space-y-6">
-        <header>
-          <p className="text-ink-muted text-sm">Welcome back,</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">ADUN Student</h1>
+      <div className="space-y-6 animate-fade-up">
+        <header className="flex items-center justify-between">
+          <div>
+            <p className="text-ink-muted text-sm">Welcome back,</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
+              ADUN Student
+            </h1>
+          </div>
+          <IconBadge className="bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">
+            <Sparkles size={20} />
+          </IconBadge>
         </header>
 
-        {/* Quick stats */}
+        {/* Stat tiles (bento row) */}
         <div className="grid grid-cols-3 gap-3">
           {stats.map((s) => (
-            <div key={s.label}
-                 className="rounded-lg border border-navy-100 dark:border-navy-800 bg-white
-                            dark:bg-navy-900/60 shadow-soft p-3 text-center">
-              <div className="font-display text-xl font-bold text-navy-700 dark:text-navy-200">
+            <Card key={s.label} className="text-center">
+              <div className="font-display text-2xl font-bold text-navy-500 dark:text-navy-100">
                 {s.value}
               </div>
               <div className="text-ink-muted text-xs mt-0.5">{s.label}</div>
-            </div>
+            </Card>
           ))}
         </div>
 
-        {/* Shortcuts */}
-        <div>
-          <h2 className="font-display text-sm font-semibold text-ink-muted mb-2">Jump to</h2>
+        {/* Shortcut grid */}
+        <section className="space-y-3">
+          <SectionHeader title="Jump to" eyebrow="Quick access" />
           <div className="grid grid-cols-2 gap-3">
-            {shortcuts.map((sc) => (
-              <Link key={sc.href} href={sc.href}
-                    className={`flex items-center gap-3 rounded-lg border border-navy-100
-                                dark:border-navy-800 bg-white dark:bg-navy-900/60
-                                shadow-soft p-3 hover:shadow-lift transition-shadow`}>
-                <span className={`grid place-items-center w-10 h-10 rounded-md ${sc.tint} text-xl`}>
-                  {sc.glyph}
-                </span>
-                <span className="font-medium">{sc.label}</span>
-              </Link>
-            ))}
+            {shortcuts.map((sc) => {
+              const ScIcon = sc.icon;
+              return (
+                <Link key={sc.href} href={sc.href} className="card card-hover flex items-center gap-3 p-3">
+                  <IconBadge className={sc.tint}>
+                    <ScIcon size={20} />
+                  </IconBadge>
+                  <span className="font-medium text-ink">{sc.label}</span>
+                </Link>
+              );
+            })}
           </div>
-        </div>
+        </section>
 
         {/* Upcoming events */}
-        <div>
-          <h2 className="font-display text-sm font-semibold text-ink-muted mb-2">Upcoming</h2>
-          <ul className="divide-y divide-navy-50 dark:divide-navy-800/60 rounded-lg border
-                          border-navy-100 dark:border-navy-800 bg-white dark:bg-navy-900/60 shadow-soft">
-            {events.data?.slice(0, 3).map((e) => (
-              <li key={e.id} className="py-3 px-3 flex items-center justify-between">
-                <div className="font-medium">{e.title}</div>
-                <span className="text-xs px-2 py-0.5 rounded-pill bg-navy-100 dark:bg-navy-800
-                                 text-navy-600 dark:text-navy-200 capitalize">{e.type}</span>
-              </li>
+        <section className="space-y-3">
+          <SectionHeader title="Upcoming" eyebrow="What's on" />
+          <Card className="divide-y divide-navy-50 dark:divide-navy-800/60 p-0">
+            {events.data?.slice(0, 3).map((e: EventDTO) => (
+              <div key={e.id} className="flex items-center justify-between px-4 py-3">
+                <span className="font-medium text-ink">{e.title}</span>
+                <span className={cn(
+                  "text-xs px-2 py-0.5 rounded-pill bg-navy-100 dark:bg-navy-800",
+                  "text-navy-600 dark:text-navy-200 capitalize"
+                )}>
+                  {e.type}
+                </span>
+              </div>
             ))}
-            {events.isLoading && <li className="p-3 text-ink-muted text-sm">Loading…</li>}
+            {events.isLoading && <p className="px-4 py-3 text-ink-muted text-sm">Loading…</p>}
             {events.data?.length === 0 && (
-              <li className="p-3 text-ink-muted text-sm">No upcoming events.</li>
+              <p className="px-4 py-3 text-ink-muted text-sm">No upcoming events.</p>
             )}
-          </ul>
-        </div>
-      </section>
+          </Card>
+        </section>
+      </div>
     </RequireAuth>
   );
 }

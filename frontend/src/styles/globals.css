@@ -3,19 +3,53 @@
 @tailwind utilities;
 
 :root {
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
   color-scheme: light dark;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-feature-settings: "cv11", "ss01"; /* DM Sans refinements */
+  }
+  body {
+    @apply bg-navy-50 text-ink font-body antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Dark mode surfaces (tokens already define navy-9xx darks). */
+  .dark body {
+    @apply bg-navy-950 text-navy-100;
+  }
+  /* Flip the ink scale to light in dark mode so text stays readable on navy. */
+  .dark .text-ink { color: #e2e8f0; }
+  .dark .text-ink-muted { color: #94a3b8; }
+  .dark .text-ink-subtle { color: #64748b; }
+  .dark .card {
+    @apply text-navy-100;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+}
 
-body {
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+@layer components {
+  /* Bento card — Apple-style modular surface. */
+  .card {
+    @apply rounded-2xl border border-navy-100 bg-white shadow-soft
+           transition-all duration-200 ease-unifed;
+  }
+  .dark .card {
+    @apply border-navy-800 bg-navy-900/70;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:shadow-lift;
+  }
 }
 
 /* Respect reduced-motion (accessibility). */
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

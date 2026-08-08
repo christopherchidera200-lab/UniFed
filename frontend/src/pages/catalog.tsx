@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { BookOpen } from "lucide-react";
 import { unifedApi, getToken, type CourseDTO } from "@/lib/api";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
 
-/** Course Catalogue browser (Phase 2). Lists courses with optional search. */
+/** Course Catalogue browser (Phase 2). Bento list of courses. */
 export default function CatalogPage() {
   const token = getToken();
-  const q = ""; // wire to a search box later
-  const courses = useQuery({
+  const q = "";
+  const courses = useQuery<CourseDTO[]>({
     queryKey: ["catalog-courses", q],
     queryFn: () => unifedApi.catalogCourses(token, q ? { q } : {}),
     enabled: Boolean(token)
@@ -14,34 +16,32 @@ export default function CatalogPage() {
 
   return (
     <RequireAuth>
-      <section className="space-y-6">
-        <header>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Course Catalogue</h1>
-          <p className="text-ink-muted text-sm">Browse the ADUN course offerings.</p>
-        </header>
-
-        <div className="rounded-lg border border-navy-100 dark:border-navy-800 bg-white
-                        dark:bg-navy-900/60 shadow-soft overflow-hidden">
-          <ul className="divide-y divide-navy-50 dark:divide-navy-800/60">
-            {courses.data?.map((c: CourseDTO) => (
-              <li key={c.id} className="py-3 px-3 flex items-center justify-between gap-3">
+      <div className="space-y-6">
+        <SectionHeader title="Course Catalogue" eyebrow="Browse ADUN offerings" />
+        <Card className="divide-y divide-navy-50 dark:divide-navy-800/60 p-0">
+          {courses.data?.map((c: CourseDTO) => (
+            <div key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <IconBadge className="bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
+                  <BookOpen size={18} />
+                </IconBadge>
                 <div>
-                  <div className="font-medium">{c.code}</div>
+                  <div className="font-semibold text-ink">{c.code}</div>
                   <div className="text-ink-subtle text-xs">{c.title}</div>
                 </div>
-                <div className="text-right text-xs text-ink-muted">
-                  <div>{c.credit_units} units</div>
-                  <div>L{c.level} · Sem {c.semester}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {courses.isLoading && <p className="p-3 text-ink-muted text-sm">Loading…</p>}
+              </div>
+              <div className="text-right text-xs text-ink-muted">
+                <div>{c.credit_units} units</div>
+                <div>L{c.level} · Sem {c.semester}</div>
+              </div>
+            </div>
+          ))}
+          {courses.isLoading && <p className="px-4 py-3 text-ink-muted text-sm">Loading…</p>}
           {courses.data?.length === 0 && (
-            <p className="p-3 text-ink-muted text-sm">No courses found.</p>
+            <p className="px-4 py-3 text-ink-muted text-sm">No courses found.</p>
           )}
-        </div>
-      </section>
+        </Card>
+      </div>
     </RequireAuth>
   );
 }

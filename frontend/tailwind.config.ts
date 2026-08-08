@@ -8,16 +8,26 @@ const config: Config = {
     extend: {
       colors: {
         navy: tokens.color.navy,
+        brand: tokens.color.brand,
         saffron: tokens.color.saffron,
         ink: tokens.color.ink
       },
       fontFamily: {
-        display: ["var(--font-display)", "Space Grotesk", "system-ui", "sans-serif"],
-        body: ["var(--font-body)", "Inter", "system-ui", "sans-serif"]
+        display: ["var(--font-display)", "DM Sans", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "DM Sans", "system-ui", "sans-serif"]
       },
       borderRadius: tokens.radius,
       boxShadow: tokens.shadow,
-      transitionTimingFunction: { unifed: tokens.motion.ease }
+      transitionTimingFunction: { unifed: tokens.motion.ease },
+      keyframes: {
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        }
+      },
+      animation: {
+        "fade-up": "fade-up 0.35s cubic-bezier(.22,1,.36,1) both"
+      }
     }
   },
   plugins: []

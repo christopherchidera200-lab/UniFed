@@ -1,13 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Briefcase, MapPin } from "lucide-react";
 import { unifedApi, getToken, type OpportunityDTO } from "@/lib/api";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
 
 /** Career Hub (Phase 2): browse opportunities, apply, and save. */
 export default function CareerPage() {
   const token = getToken();
   const qc = useQueryClient();
 
-  const opportunities = useQuery({
+  const opportunities = useQuery<OpportunityDTO[]>({
     queryKey: ["opportunities"],
     queryFn: () => unifedApi.opportunities(token),
     enabled: Boolean(token)
@@ -23,28 +25,29 @@ export default function CareerPage() {
 
   return (
     <RequireAuth>
-      <section className="space-y-6">
-        <header>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Career Hub</h1>
-          <p className="text-ink-muted text-sm">Internships, graduate roles, and gigs.</p>
-        </header>
-
+      <div className="space-y-6">
+        <SectionHeader title="Career Hub" eyebrow="Internships, graduate roles & gigs" />
         <div className="space-y-3">
           {opportunities.data?.map((o: OpportunityDTO) => (
-            <article
-              key={o.id}
-              className="rounded-lg border border-navy-100 dark:border-navy-800 bg-white
-                         dark:bg-navy-900/60 shadow-soft p-3"
-            >
+            <Card key={o.id}>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium">{o.title}</div>
-                  <div className="text-ink-subtle text-xs">
-                    {o.employer ?? "Employer"} · {o.employment_type}
-                    {o.remote ? " · remote" : ""}
+                <div className="flex items-start gap-3">
+                  <IconBadge className="bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">
+                    <Briefcase size={18} />
+                  </IconBadge>
+                  <div>
+                    <div className="font-semibold text-ink">{o.title}</div>
+                    <div className="text-ink-subtle text-xs">
+                      {o.employer ?? "Employer"} · {o.employment_type}
+                    </div>
+                    {o.location && (
+                      <div className="text-ink-muted text-xs mt-0.5 flex items-center gap-1">
+                        <MapPin size={12} /> {o.location}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded-pill bg-saffron-100 text-saffron-700">
+                <span className="text-xs px-2 py-0.5 rounded-pill bg-saffron-100 text-saffron-700 dark:bg-saffron-500/20 dark:text-saffron-300">
                   {o.salary_range ?? "—"}
                 </span>
               </div>
@@ -64,14 +67,14 @@ export default function CareerPage() {
                   Save
                 </button>
               </div>
-            </article>
+            </Card>
           ))}
           {opportunities.isLoading && <p className="text-ink-muted text-sm">Loading…</p>}
           {opportunities.data?.length === 0 && (
             <p className="text-ink-muted text-sm">No open opportunities right now.</p>
           )}
         </div>
-      </section>
+      </div>
     </RequireAuth>
   );
 }

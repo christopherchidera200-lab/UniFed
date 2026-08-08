@@ -1,29 +1,34 @@
 import Link from "next/link";
+import { BookOpen, CalendarDays, Briefcase } from "lucide-react";
+import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
 
 /** Discover hub (Phase 2): entry points to the new browse surfaces.
  *  Keeps the mandated 5-tab bottom nav intact; this is the "Discover" target. */
 export default function DiscoverPage() {
   const cards = [
-    { href: "/catalog", title: "Course Catalogue", desc: "Browse ADUN courses by level, semester, and programme." },
-    { href: "/events", title: "University Calendar", desc: "Convocation, SIWES windows, and exam periods." },
-    { href: "/career", title: "Career Hub", desc: "Internships, graduate roles, and gigs — apply or save." }
+    { href: "/catalog", title: "Course Catalogue", icon: BookOpen, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300", desc: "Browse ADUN courses by level, semester, and programme." },
+    { href: "/events", title: "University Calendar", icon: CalendarDays, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300", desc: "Convocation, SIWES windows, and exam periods." },
+    { href: "/career", title: "Career Hub", icon: Briefcase, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300", desc: "Internships, graduate roles, and gigs — apply or save." }
   ];
   return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Discover</h1>
-        <p className="text-ink-muted text-sm">Explore what UniFed offers.</p>
-      </header>
-      <div className="grid gap-3">
-        {cards.map((c) => (
-          <Link key={c.href} href={c.href}
-                className="block rounded-lg border border-navy-100 dark:border-navy-800 bg-white
-                           dark:bg-navy-900/60 shadow-soft p-4 hover:border-saffron-300 transition-colors">
-            <div className="font-medium">{c.title}</div>
-            <div className="text-ink-subtle text-sm">{c.desc}</div>
-          </Link>
-        ))}
+    <div className="space-y-6">
+      <SectionHeader title="Discover" eyebrow="Explore what UniFed offers" />
+      <div className="space-y-3">
+        {cards.map((c) => {
+          const CIcon = c.icon;
+          return (
+            <Link key={c.href} href={c.href} className="card card-hover flex items-center gap-3 p-4">
+              <IconBadge className={c.tint}>
+                <CIcon size={20} />
+              </IconBadge>
+              <div>
+                <div className="font-medium text-ink">{c.title}</div>
+                <div className="text-ink-subtle text-sm">{c.desc}</div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 }
