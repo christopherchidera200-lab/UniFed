@@ -39,6 +39,30 @@ Rails.application.routes.draw do
 
       post "student-id/:student_id/issue", to: "student_ids#issue"
       post "student-id/verify", to: "student_ids#verify"
+
+      # Phase 1 — Federation (ActivityPub)
+      get ".well-known/webfinger", to: "federation#webfinger"
+      post "federation/inbox", to: "federation#inbox"
+      get  "federation/outbox", to: "federation#outbox"
+
+      # Phase 1 — Social (Home / feed)
+      resources :feed, only: [:index] do
+        collection do
+          post "posts", to: "feed#create"
+          post "posts/:id/react", to: "feed#react"
+          post "posts/:id/comments", to: "feed#comment"
+        end
+      end
+
+      # Phase 1 — Discover (Search)
+      resources :search, only: [:index] do
+        collection do
+          post "saved", to: "search#save"
+        end
+      end
+
+      # Phase 1 — Profile
+      resource :profile, only: %i[show update]
     end
   end
 end

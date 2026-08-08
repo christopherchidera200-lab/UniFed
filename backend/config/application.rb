@@ -37,6 +37,7 @@ module UniFed
     # OIDC issuer for this node (per-deployment override via ENV).
     config.x.oidc_issuer = ENV.fetch("OIDC_ISSUER", "https://adun.unifed.ng")
     config.x.node_slug   = ENV.fetch("NODE_SLUG", "adun")
+    config.x.node_university_id = ENV.fetch("NODE_UNIVERSITY_ID", nil)
     config.x.federation_enabled = ENV.fetch("FEDERATION_ENABLED", "true") == "true"
   end
 end

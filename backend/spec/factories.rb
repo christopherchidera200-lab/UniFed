@@ -171,4 +171,64 @@ FactoryBot.define do
     purpose { "health_wellbeing" }
     granted { true }
   end
+
+  # ---- Phase 1: Federation ----
+  factory :federation_actor, class: "Federation::Actor" do
+    association :university
+    actor_type { "university" }
+    actor_uri { "https://adun.unifed.ng/actors/#{SecureRandom.hex(4)}@adun.unifed.ng" }
+    inbox_url { "https://adun.unifed.ng/api/v1/federation/inbox" }
+    outbox_url { "https://adun.unifed.ng/api/v1/federation/outbox" }
+    public_key_pem { "-----BEGIN PUBLIC KEY-----\nMOCK\n-----END PUBLIC KEY-----" }
+  end
+
+  factory :federation_activity, class: "Federation::Activity" do
+    association :actor, factory: :federation_actor
+    activity_type { "Create" }
+    object_type { "Note" }
+    object_uri { "https://adun.unifed.ng/objects/#{SecureRandom.hex(6)}" }
+    payload { { "type" => "Note", "content" => "hello federation" } }
+  end
+
+  factory :federation_delivery, class: "Federation::Delivery" do
+    association :activity, factory: :federation_activity
+    target_inbox { "https://remote.edu/inbox" }
+    status { "pending" }
+  end
+
+  # ---- Phase 1: Social ----
+  factory :social_post, class: "Social::Post" do
+    association :university
+    association :author, factory: :identity_user
+    body { "UniFed is live at ADUN!" }
+    visibility { "university" }
+  end
+
+  factory :social_reaction, class: "Social::Reaction" do
+    association :post, factory: :social_post
+    association :author, factory: :identity_user
+    kind { "like" }
+  end
+
+  factory :social_comment, class: "Social::Comment" do
+    association :post, factory: :social_post
+    association :author, factory: :identity_user
+    body { "Congrats!" }
+  end
+
+  # ---- Phase 1: Search + Profile ----
+  factory :search_saved_search, class: "Search::SavedSearch" do
+    association :university
+    association :user, factory: :identity_user
+    query { "cyber security" }
+  end
+
+  factory :profile_profile, class: "Profile::Profile" do
+    association :user, factory: :identity_user
+    bio { "CS student at ADUN" }
+    skills { ["Ruby", "Security"] }
+    portfolio { [{ "title" => "Thesis", "url" => "https://example.com" }] }
+    social_links { { "twitter" => "@me" } }
+    creator { false }
+  end
 end

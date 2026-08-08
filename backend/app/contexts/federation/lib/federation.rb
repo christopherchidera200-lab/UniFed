@@ -1,0 +1,10 @@
+# Context loader for the Federation bounded context (ActivityPub, ADR-0003).
+require_relative "../app/models/federation/actor"
+require_relative "../app/models/federation/activity"
+require_relative "../app/models/federation/delivery"
+require_relative "../app/services/federation/webfinger_service"
+require_relative "../app/services/federation/signature_verifier"
+require_relative "../app/services/federation/delivery_service"
+require_relative "../app/services/federation/inbox_handler"
+require_relative "../app/services/federation/key_service"
+require_relative "../app/services/federation/actor_provisioning_service"
