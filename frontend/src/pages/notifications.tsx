@@ -32,7 +32,7 @@ export default function NotificationsPage() {
         </ul>
         {notes.isLoading && <p className="text-ink-muted text-sm">Loading…</p>}
         {notes.data?.length === 0 && (
-          <p className="text-ink-muted text-sm">You're all caught up.</p>
+          <p className="text-ink-muted text-sm">You&apos;re all caught up.</p>
         )}
       </section>
     </RequireAuth>
