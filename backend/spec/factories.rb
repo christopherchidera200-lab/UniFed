@@ -276,4 +276,32 @@ FactoryBot.define do
     purpose { "job-application" }
   end
 
+  # ---- Phase 2: Events / Calendar ----
+  factory :event, class: "Academic::Event" do
+    association :university
+    title { "Convocation 2026" }
+    type { "convocation" }
+    event_start { 30.days.from_now }
+    event_end { 31.days.from_now }
+  end
+
+  # ---- Phase 2: SIWES / Internship ----
+  factory :siwes_placement, class: "Siwes::SiwesPlacement" do
+    association :student
+    employer_name { "Naija Tech Ltd" }
+    supervisor_name { "Mr. Smith" }
+    supervisor_email { "supervisor@naijatech.com" }
+    start_date { 60.days.from_now.to_date }
+    end_date { 150.days.from_now.to_date }
+    status { "pending" }
+  end
+
+  factory :siwes_log, class: "Siwes::SiwesLog" do
+    association :siwes_placement
+    week_number { 1 }
+    hours { 40 }
+    task_summary { "Set up dev environment" }
+    status { "submitted" }
+  end
+
 end

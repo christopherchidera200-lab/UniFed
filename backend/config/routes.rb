@@ -85,6 +85,23 @@ Rails.application.routes.draw do
         end
       end
 
+      # Phase 2 — Event Calendar
+      resources :calendar, only: [] do
+        collection do
+          get "events", to: "calendar#events"
+        end
+      end
+
+      # Phase 2 — SIWES / Internship tracking
+      resources :siwes, only: [] do
+        collection do
+          post "placement", to: "siwes#placement"
+          post "logs", to: "siwes#logs"
+          post "logs/:id/verify", to: "siwes#verify_log"
+          get  "completion", to: "siwes#completion"
+        end
+      end
+
       # Phase 2 — Assessments (record + rollup)
       resources :assessments, only: [] do
         collection do
