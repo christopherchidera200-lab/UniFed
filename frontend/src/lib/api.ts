@@ -49,6 +49,22 @@ export interface EventDTO {
   department_id: string | null;
 }
 
+export interface LibraryResourceDTO {
+  id: string;
+  title: string;
+  author: string | null;
+  type: string;
+  available: boolean;
+}
+
+export interface NotificationDTO {
+  id: string;
+  category: string;
+  title: string;
+  body: string | null;
+  created_at: string;
+}
+
 export interface OpportunityDTO {
   id: string;
   title: string;
@@ -130,6 +146,17 @@ export const unifedApi = {
     ),
   saveJob: (token: string, id: string) =>
     authedPost<{ saved: boolean }>(`/api/v1/career/opportunities/${id}/save`, token, {})
+  ,
+
+  // Phase 2 depth — Library
+  libraryResources: (token: string, params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return authedFetch<LibraryResourceDTO[]>(`/api/v1/library/resources?${qs}`, token);
+  },
+
+  // Phase 2 depth — Notifications
+  notifications: (token: string) =>
+    authedFetch<NotificationDTO[]>(`/api/v1/notifications`, token)
 };
 
 /** Resolve the OIDC bearer token via the shared auth store. */

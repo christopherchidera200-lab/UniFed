@@ -110,6 +110,25 @@ Rails.application.routes.draw do
         end
       end
 
+      # Phase 2 depth — Library
+      resources :library, only: [] do
+        collection do
+          get  "resources", to: "library#resources"
+          post "borrow", to: "library#borrow"
+          post "return", to: "library#return_resource"
+        end
+      end
+
+      # Phase 2 depth — Notifications
+      resources :notifications, only: [:index] do
+        collection do
+          post ":id/read", to: "notifications#read", as: :read
+        end
+      end
+
+      # Phase 2 depth — Examinations (scheduling)
+      resources :examinations, only: [:index]
+
       # Phase 2 — Career Hub
       resources :career, only: [] do
         collection do

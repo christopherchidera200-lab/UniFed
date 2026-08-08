@@ -1,0 +1,71 @@
+# UniFed Nigeria — local full-stack (Docker).
+# Brings up postgres + redis + backend (Rails API) + frontend (Next.js).
+# Usage:  docker compose up --build
+# Then open http://localhost:3000 (frontend) -> login -> browse catalog/career.
+#
+# Backend boots, loads db/schema/*.sql, and seeds a demo 'adun' node + a
+# student + an employer/opportunity so a browser login has data.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: unifed
+      POSTGRES_PASSWORD: unifed
+      POSTGRES_DB: unifed
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unifed"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      RAILS_ENV: production
+      RACK_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_USER: unifed
+      DATABASE_PASSWORD: unifed
+      DATABASE_NAME: unifed
+      DATABASE_URL: postgres://unifed:unifed@postgres:5432/unifed
+      REDIS_URL: redis://redis:6379/0
+      RAILS_MAX_THREADS: "5"
+      OIDC_JWKS_PRIVATE: ${OIDC_JWKS_PRIVATE:-ci-insecure-not-for-prod}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-change-me-in-prod}
+      # force_ssl is on in production.rb; terminate TLS at the proxy in real
+      # deploys. For local docker, set to false so http:// works.
+      RAILS_FORCE_SSL: "false"
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: http://backend:3000
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE: http://backend:3000
+    ports:
+      - "3001:3000"
+
+volumes:
+  pgdata:

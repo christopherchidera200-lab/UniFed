@@ -304,4 +304,37 @@ FactoryBot.define do
     status { "submitted" }
   end
 
+  # ---- Phase 2 depth: Library ----
+  factory :library_resource, class: "Library::LibraryResource" do
+    association :university
+    title { "Introduction to Algorithms" }
+    author { "Cormen et al." }
+    resource_type { "book" }
+  end
+
+  factory :library_loan, class: "Library::LibraryLoan" do
+    association :student
+    association :library_resource
+    status { "borrowed" }
+  end
+
+  # ---- Phase 2 depth: Notifications ----
+  factory :notification_item, class: "Notification::NotificationItem" do
+    association :university
+    association :user, factory: :identity_user
+    category { "system" }
+    channel { "in_app" }
+    title { "Welcome to UniFed" }
+    status { "unread" }
+  end
+
+  # ---- Phase 2 depth: Examinations ----
+  factory :exam_schedule, class: "Examination::ExamSchedule" do
+    association :university
+    association :course_offering
+    exam_type { "exam" }
+    starts_at { 30.days.from_now }
+    ends_at { 30.days.from_now + 2.hours }
+  end
+
 end
