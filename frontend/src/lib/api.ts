@@ -1,6 +1,8 @@
 /** Typed API client for the UniFed Rails backend. */
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://api.unifed.ng";
 
+import { getToken as getTokenFromAuth } from "./auth";
+
 export interface GradeRecordDTO {
   course_code: string;
   course_title: string;
@@ -130,9 +132,7 @@ export const unifedApi = {
     authedPost<{ saved: boolean }>(`/api/v1/career/opportunities/${id}/save`, token, {})
 };
 
-/** Resolve the OIDC bearer token. In production this comes from the auth
- *  session/cookie; for the demo it is read from sessionStorage. */
+/** Resolve the OIDC bearer token via the shared auth store. */
 export function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return window.sessionStorage.getItem("unifed_token") ?? "";
+  return getTokenFromAuth();
 }
