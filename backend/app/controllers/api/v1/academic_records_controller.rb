@@ -4,7 +4,7 @@ module Api
     # Authorization: role + owning-university scoped.
     class AcademicRecordsController < BaseController
       before_action :authenticate!
-      before_action :load_student, only: %i[show records summary]
+      before_action :load_student, only: %i[show records summary transcript]
 
       # GET /api/v1/academic/students/:id
       def show
@@ -41,6 +41,31 @@ module Api
           total_credits: cum&.total_credits,
           class_of_degree: cum&.class_of_degree
         }
+      end
+
+      # POST /api/v1/academic/students/:id/transcript  -> signed, verifiable transcript
+      def transcript
+        authorize_student!(@student)
+        token = Records::TranscriptService.issue_signed(@student)
+        Records::TranscriptIssuance.create!(
+          student: @student,
+          token_hash: Digest::SHA256.hexdigest(token),
+          issued_to: @current_subject || "self",
+          purpose: params[:purpose]
+        )
+        render json: { transcript_jwt: token }
+      end
+
+      # POST /api/v1/transcript/verify  (public) -> decode + verify signed transcript
+      def verify_transcript
+        token = params[:transcript_jwt] || params.dig(:transcript, :jwt)
+        return render json: { error: "missing_token" }, status: :bad_request unless token
+        result = Records::TranscriptService.verify(token)
+        if result.is_a?(Hash) && result[:error]
+          render json: { valid: false, error: result[:error] }, status: :unprocessable_entity
+        else
+          render json: { valid: true, transcript: result }
+        end
       end
 
       private

@@ -43,8 +43,12 @@ Rails.application.routes.draw do
           get "students/:id", to: "academic_records#show", as: :student
           get "students/:id/records", to: "academic_records#records", as: :student_records
           get "students/:id/summary", to: "academic_records#summary", as: :student_summary
+          post "students/:id/transcript", to: "academic_records#transcript", as: :student_transcript
         end
       end
+
+      # Public transcript verification (signed JWT, verified against JWKS).
+      post "transcript/verify", to: "academic_records#verify_transcript"
 
       post "student-id/:student_id/issue", to: "student_ids#issue"
       post "student-id/verify", to: "student_ids#verify"
@@ -72,6 +76,33 @@ Rails.application.routes.draw do
 
       # Phase 1 — Profile
       resource :profile, only: %i[show update]
+
+      # Phase 2 — Course Catalogue (browse)
+      resources :catalog, only: [] do
+        collection do
+          get "courses", to: "catalog#courses"
+          get "offerings", to: "catalog#offerings"
+        end
+      end
+
+      # Phase 2 — Assessments (record + rollup)
+      resources :assessments, only: [] do
+        collection do
+          post "record", to: "assessments#record"
+          post "rollup", to: "assessments#rollup"
+        end
+      end
+
+      # Phase 2 — Career Hub
+      resources :career, only: [] do
+        collection do
+          get  "opportunities", to: "career#opportunities"
+          get  "recommendations", to: "career#recommendations"
+          get  "applications", to: "career#applications"
+          post "opportunities/:id/apply", to: "career#apply"
+          post "opportunities/:id/save", to: "career#save_job"
+        end
+      end
     end
   end
 end

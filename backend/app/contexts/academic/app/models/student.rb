@@ -8,6 +8,8 @@ module Academic
     has_many :grade_records, dependent: :destroy
     has_many :academic_summaries, class_name: "Records::AcademicSummary", dependent: :destroy
     has_many :digital_student_ids, class_name: "StudentId::DigitalStudentId", dependent: :destroy
+    has_many :career_applications, class_name: "Career::CareerApplication", dependent: :destroy
+    has_many :saved_jobs, class_name: "Career::SavedJob", dependent: :destroy
 
     validates :matric_no, presence: true, uniqueness: { scope: :university_id }
     validates :entry_year, presence: true

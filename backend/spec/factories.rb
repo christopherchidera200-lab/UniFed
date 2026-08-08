@@ -231,4 +231,49 @@ FactoryBot.define do
     social_links { { "twitter" => "@me" } }
     creator { false }
   end
+
+  # ---- Phase 2: Career Hub ----
+  factory :employer_profile, class: "Career::EmployerProfile" do
+    association :university
+    name { "Naija Tech Ltd" }
+    industry { "tech" }
+    verified { false }
+  end
+
+  factory :career_opportunity, class: "Career::CareerOpportunity" do
+    association :employer_profile
+    title { "Junior Backend Engineer" }
+    employment_type { "full_time" }
+    location_type { "remote" }
+    remote { true }
+    status { "open" }
+  end
+
+  factory :career_application, class: "Career::CareerApplication" do
+    association :student
+    association :career_opportunity
+  end
+
+  factory :saved_job, class: "Career::SavedJob" do
+    association :student
+    association :career_opportunity
+  end
+
+  # ---- Phase 2: Assessments ----
+  factory :assessment_record, class: "Assessment::AssessmentRecord" do
+    association :student
+    association :course_offering
+    component { "ca1" }
+    score { 80 }
+    weight { 30 }
+  end
+
+  # ---- Phase 2: Transcript issuance ----
+  factory :transcript_issuance, class: "Records::TranscriptIssuance" do
+    association :student
+    token_hash { SecureRandom.hex(32) }
+    issued_to { "verifier-1" }
+    purpose { "job-application" }
+  end
+
 end
