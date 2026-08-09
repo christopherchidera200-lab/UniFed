@@ -44,9 +44,12 @@ jobs:
       - run: npm ci
       # Playwright browsers (chromium) for the E2E smoke test.
       - run: npx playwright install --with-deps chromium
-      # Build + serve the mock-API E2E (tests use page.route, no live backend).
-      - run: npm run build
-      - run: npm run start &
-      - name: Wait for server
-        run: npx wait-on http://localhost:3000 || (sleep 5 && npx wait-on http://localhost:3000)
-      - run: npm run e2e
+      # Build + serve the mock-API E2E in one step (tests use page.route,
+      # so no live backend needed). Background the server, wait for it,
+      # then run Playwright against http://localhost:3000.
+      - run: |
+          npm run build
+          npm run start & 
+          npx wait-on http://localhost:3000
+          npx playwright test smoke.spec.ts
+          kill %1 2>/dev/null || true
