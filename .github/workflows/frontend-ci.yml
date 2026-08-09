@@ -32,6 +32,8 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_BASE: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,4 +44,9 @@ jobs:
       - run: npm ci
       # Playwright browsers (chromium) for the E2E smoke test.
       - run: npx playwright install --with-deps chromium
+      # Build + serve the mock-API E2E (tests use page.route, no live backend).
+      - run: npm run build
+      - run: npm run start &
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000 || (sleep 5 && npx wait-on http://localhost:3000)
       - run: npm run e2e
