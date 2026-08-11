@@ -31,9 +31,15 @@ module Search
     end
 
     def self.search_events(q, uni_id, limit)
-      ActiveRecord::Base.connection.execute(
-        "SELECT id, title, type FROM events WHERE university_id = '#{uni_id}' AND title ILIKE '#{q}' LIMIT #{limit}"
-      ).to_a
+      # AR query (parameterized, transaction-safe) replaces the previous raw
+      # connection.execute, which (a) interpolated input (SQL injection) and
+      # (b) did not reliably see test-transaction rows.
+      Academic::Event
+        .where(university_id: uni_id)
+        .where("title ILIKE ?", q)
+        .limit(limit)
+        .pluck(:id, :title, :type)
+        .map { |id, title, type| { "id" => id, "title" => title, "type" => type } }
     end
 
     # Semantic/embedding search is an extension point; returns structural results

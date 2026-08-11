@@ -156,9 +156,13 @@ Recommend adding spec files for these 4 before the cloud stage.
 - ✅ Secrets correctly gitignored; no credentials in tree.
 
 ### Risks / Tech Debt
-1. **🔴 Test coverage gap** — 4 contexts (`student_id`, `profile`, `search`,
-   `academic`) have no RSpec specs. `academic` is the largest model set (13) and
-   is untested directly.
+1. **🔴 Test coverage gap (RESOLVED)** — `student_id`, `profile`, `search`,
+   `academic` previously had no RSpec specs. Specs added (see commit after
+   `55e71b5`): privacy-by-design ID issuance/verification, profile compose/update,
+   saved-search + multi-category query, academic loader + core aggregates.
+   **Bonus fix:** `Search::QueryService#search_events` was interpolating
+   `university_id`/`query` into raw SQL — SQL-injection + uuid-type crash.
+   Now parameterized via `sanitize_sql_array`.
 2. **🟡 Ruby toolchain ambiguity** — local default `ruby` is 4.0.6; memory notes
    `rails`/`rake` break on 4.0 and prescribes Ruby 3.3. RSpec *did* run green
    under 4.0.6 in this audit (97/0), so the break may be version/ENV-specific —
