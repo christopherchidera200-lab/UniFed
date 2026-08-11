@@ -26,6 +26,11 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   backend:
     build:
@@ -35,7 +40,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     environment:
       RAILS_ENV: production
       RACK_ENV: production
@@ -43,7 +48,8 @@ services:
       DATABASE_USER: unifed
       DATABASE_PASSWORD: unifed
       DATABASE_NAME: unifed
-      DATABASE_URL: postgres://unifed:unifed@postgres:5432/unifed
+      DATABASE_URL: postgres://unifed:***@postgres:5432/unifed
+      DATABASE_SSL: "false"
       REDIS_URL: redis://redis:6379/0
       RAILS_MAX_THREADS: "5"
       OIDC_JWKS_PRIVATE: ${OIDC_JWKS_PRIVATE:-ci-insecure-not-for-prod}
@@ -51,8 +57,22 @@ services:
       # force_ssl is on in production.rb; terminate TLS at the proxy in real
       # deploys. For local docker, set to false so http:// works.
       RAILS_FORCE_SSL: "false"
+      # --- Node identity + federation (staging). Coolify must override these. ---
+      NODE_SLUG: ${NODE_SLUG:-adun-staging}
+      NODE_UNIVERSITY_ID: ${NODE_UNIVERSITY_ID:-00000000-0000-0000-0000-000000000000}
+      OIDC_ISSUER: ${OIDC_ISSUER:-https://api-staging.unifed.ng}
+      OIDC_KID: ${OIDC_KID:-unifed-staging-1}
+      FEDERATION_ENABLED: ${FEDERATION_ENABLED:-true}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-120}
+      SECURE_HEADERS_HSTS: ${SECURE_HEADERS_HSTS:-true}
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/v1/healthz || exit 1"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
 
   frontend:
     build:
@@ -66,6 +86,11 @@ services:
       NEXT_PUBLIC_API_BASE: http://backend:3000
     ports:
       - "3001:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
 
 volumes:
   pgdata:
