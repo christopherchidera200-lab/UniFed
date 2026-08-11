@@ -169,11 +169,10 @@ server → `playwright test smoke.spec.ts` → **2/2 pass**.
    Verified: injected `' OR '1'='1` does not break out.
 3. ✅ **`.gitignore` update — COMMITTED** (`55e71b5`): adds `_*.log`,
    `frontend/test-results/`, `frontend/playwright-report/` ignores.
-4. 🟡 **Ruby toolchain ambiguity (residual, non-blocking).** Local default `ruby`
-   is 4.0.6; RSpec ran green under it this turn (123/0), so the historical
-   "rails/rake broken on 4.0" note is not currently blocking the suite.
-   **Recommendation (pre-cloud):** pin Ruby explicitly in `backend-ci.yml`
-   (`setup-ruby@v4` with a fixed version) so CI can't drift.
+1. ✅ **Ruby pinned in `backend-ci.yml`** — both jobs use `ruby/setup-ruby@v1` with
+   `ruby-version: "3.3"` **and `bundler-cache: true`** (lockfile-enforced, no version
+   drift; matches `Dockerfile` `ruby:3.3-slim` and `Gemfile` `>= 3.3.0`). The audit's
+   earlier "TBD" note was stale — the pin was present; this hardens it.
 5. 🟡 **`academic` context has 0 services/controllers** — pure domain models
    consumed by `records`. Acceptable DDD; documented dependency boundary above.
 6. 🟡 **Infra not wired to `apply`** — correct for pre-cloud stage; flag for when

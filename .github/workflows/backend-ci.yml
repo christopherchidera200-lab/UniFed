@@ -40,6 +40,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
+          bundler-cache: true
 
       - name: Bundle install (generates Gemfile.lock)
         run: bundle install --jobs 4
@@ -74,6 +75,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
+          bundler-cache: true
       - name: Bundler audit
         run: |
           gem install bundler-audit
