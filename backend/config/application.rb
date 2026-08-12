@@ -2,6 +2,8 @@ require_relative "boot"
 
 require "rails/all"
 
+Bundler.require(*Rails.groups)
+
 # NOTE: bounded-context namespaces (Academic::, Records::, StudentId::) are
 # required explicitly from spec/rails_helper.rb (and any runner) AFTER the
 # Rails environment boots, so ApplicationRecord is available. We intentionally

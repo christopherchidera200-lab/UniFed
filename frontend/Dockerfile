@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 COPY . .
+RUN mkdir -p public
 # Point the client at the backend service at build/runtime.
 ARG NEXT_PUBLIC_API_BASE=http://backend:3000
 ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE

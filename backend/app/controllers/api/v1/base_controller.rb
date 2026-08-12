@@ -6,6 +6,8 @@ module Api
     class BaseController < ActionController::API
       include ActionController::HttpAuthentication::Token::ControllerMethods
 
+      before_action :authenticate!
+
       attr_reader :current_subject, :current_university, :jwt_payload, :current_user
 
       protected

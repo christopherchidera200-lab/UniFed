@@ -19,7 +19,7 @@ export function BottomNav() {
       aria-label="Primary"
       className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-around
                  h-16 px-2 bg-white/85 dark:bg-navy-900/85 backdrop-blur-xl
-                 border-t border-navy-100 dark:border-navy-800 md:hidden"
+                 border-t border-navy-100 dark:border-navy-800"
     >
       {tokens.nav.map((item) => {
         const Icon = ICONS[item.icon] ?? Home;

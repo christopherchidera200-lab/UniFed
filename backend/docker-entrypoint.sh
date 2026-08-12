@@ -3,6 +3,7 @@
 # Loads the authoritative schema SQL (repo-root db/schema/*.sql) into Postgres,
 # runs seeds once, then execs the server.
 set -e
+export PGPASSWORD="$DATABASE_PASSWORD"
 
 echo "== waiting for postgres =="
 until pg_isready -h "$DATABASE_HOST" -U "$DATABASE_USER" >/dev/null 2>&1; do
@@ -16,7 +17,7 @@ for f in /app/db/schema/*.sql; do
 done
 
 echo "== seeding (idempotent) =="
-bundle exec rails runner "Rails.root.join('db/seeds.rb').read.then { |c| eval(c) }" || true
+bundle exec rails runner db/seeds.rb || true
 
 echo "== starting server =="
-exec "$@"
+exec bundle exec "$@"

@@ -48,7 +48,7 @@ services:
       DATABASE_USER: unifed
       DATABASE_PASSWORD: unifed
       DATABASE_NAME: unifed
-      DATABASE_URL: postgres://unifed:***@postgres:5432/unifed
+      DATABASE_URL: postgres://unifed:unifed@postgres:5432/unifed
       DATABASE_SSL: "false"
       REDIS_URL: redis://redis:6379/0
       RAILS_MAX_THREADS: "5"
@@ -79,11 +79,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE: http://backend:3000
+        NEXT_PUBLIC_API_BASE: http://localhost:3000
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_API_BASE: http://backend:3000
+      NEXT_PUBLIC_API_BASE: http://localhost:3000
     ports:
       - "3001:3000"
     healthcheck:

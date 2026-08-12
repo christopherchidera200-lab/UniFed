@@ -19,8 +19,8 @@ WORKDIR /app
 
 # Install gems first (layer cache).
 COPY backend/Gemfile backend/Gemfile.lock ./
-RUN gem install bundler -v "$(grep -A1 'BUNDLED WITH' backend/Gemfile.lock | tail -1)" \
-    && bundle install --jobs 4
+RUN gem install bundler -v "$(grep -A1 'BUNDLED WITH' Gemfile.lock | tail -1)" \
+    && bundle lock --add-platform x86_64-linux && bundle install --jobs 4
 
 # App source.
 COPY backend/ ./backend/
@@ -28,11 +28,12 @@ COPY backend/ ./backend/
 COPY db/ ./db/
 
 WORKDIR /app/backend
+RUN bundle lock --add-platform x86_64-linux
 
 EXPOSE 3000
 
 # Load schema (psql, deterministic — no rails needed) then seed on first boot.
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["puma", "-p", "3000", "-e", "production"]

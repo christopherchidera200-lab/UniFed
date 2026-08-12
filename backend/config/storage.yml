@@ -1,0 +1,7 @@
+# Active Storage requires this file to exist at boot, even if unused.
+# The app does not currently use file storage (no has_one_attached / has_many_attached
+# calls exist in any model — see CODEBASE-INVENTORY-AUDIT.md). This local-disk
+# stub satisfies Rails' eager-load requirement without provisioning real storage.
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
