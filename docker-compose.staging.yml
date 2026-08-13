@@ -44,7 +44,7 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-change-me-in-prod}
       RAILS_FORCE_SSL: "false"
       NODE_SLUG: ${NODE_SLUG:-adun-staging}
-      NODE_UNIVERSITY_ID: ${NODE_UNIVERSITY_ID:-00000000-0000-0000-0000-000000000000}
+      NODE_UNIVERSITY_ID: ${NODE_UNIVERSITY_ID:-b697c531-4995-4f9b-a324-3a3c82c9caa1}
       OIDC_ISSUER: ${OIDC_ISSUER:-https://api-staging.unifed.ng}
       OIDC_KID: ${OIDC_KID:-unifed-staging-1}
       FEDERATION_ENABLED: ${FEDERATION_ENABLED:-true}
