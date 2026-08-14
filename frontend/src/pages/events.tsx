@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import { unifedApi, getToken, type EventDTO } from "@/lib/api";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -27,7 +26,7 @@ export default function EventsPage() {
   );
 
   return (
-    <RequireAuth>
+    <>
       <div className="space-y-6">
         <SectionHeader title="University Calendar" eyebrow="Ceremonies, SIWES & exams" />
         <Card>
@@ -49,6 +48,6 @@ export default function EventsPage() {
           </ol>
         </Card>
       </div>
-    </RequireAuth>
+    </>
   );
 }

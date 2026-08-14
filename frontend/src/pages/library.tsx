@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Library } from "lucide-react";
 import { unifedApi, getToken, type LibraryResourceDTO } from "@/lib/api";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
 
@@ -15,7 +14,7 @@ export default function LibraryPage() {
   });
 
   return (
-    <RequireAuth>
+    <>
       <div className="space-y-6">
         <SectionHeader title="Library" eyebrow="Books, journals & past questions" />
         <Card className="divide-y divide-navy-50 dark:divide-navy-800/60 p-0">
@@ -46,6 +45,6 @@ export default function LibraryPage() {
           )}
         </Card>
       </div>
-    </RequireAuth>
+    </>
   );
 }

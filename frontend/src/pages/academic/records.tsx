@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { GraduationCap } from "lucide-react";
 import { unifedApi } from "@/lib/api";
 import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 /** Slice-1 screen: a student's academic records + CGPA summary. */
 export default function AcademicRecordsPage() {
@@ -20,6 +21,7 @@ export default function AcademicRecordsPage() {
   });
 
   return (
+    <RequireAuth>
     <div className="space-y-6">
       <SectionHeader
         title="Academic Records"
@@ -68,5 +70,6 @@ export default function AcademicRecordsPage() {
         )}
       </Card>
     </div>
+    </RequireAuth>
   );
 }

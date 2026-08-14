@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Plus, Image as ImageIcon, Send } from "lucide-react";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 /** Create — compose a post / announcement to the university community. */
 export default function CreatePage() {
   const [text, setText] = useState("");
 
   return (
+    <RequireAuth>
     <div className="space-y-6">
       <SectionHeader title="Create" eyebrow="Share with your community" />
       <Card>
@@ -41,5 +43,6 @@ export default function CreatePage() {
         Posts publish to your university&apos;s federated timeline.
       </p>
     </div>
+    </RequireAuth>
   );
 }

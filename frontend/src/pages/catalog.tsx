@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
 import { unifedApi, getToken, type CourseDTO } from "@/lib/api";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
 
 /** Course Catalogue browser (Phase 2). Bento list of courses. */
@@ -15,7 +14,7 @@ export default function CatalogPage() {
   });
 
   return (
-    <RequireAuth>
+    <>
       <div className="space-y-6">
         <SectionHeader title="Course Catalogue" eyebrow="Browse ADUN offerings" />
         <Card className="divide-y divide-navy-50 dark:divide-navy-800/60 p-0">
@@ -42,6 +41,6 @@ export default function CatalogPage() {
           )}
         </Card>
       </div>
-    </RequireAuth>
+    </>
   );
 }

@@ -2,12 +2,14 @@ import { User, Mail, GraduationCap, LogOut } from "lucide-react";
 import { getToken } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 /** Profile — student identity + quick actions. Logout clears the session. */
 export default function ProfilePage() {
   const token = getToken();
 
   return (
+    <RequireAuth>
     <div className="space-y-6">
       <SectionHeader title="Profile" eyebrow="Your UniFed identity" />
 
@@ -52,5 +54,6 @@ export default function ProfilePage() {
         <LogOut size={16} /> Sign out
       </button>
     </div>
+    </RequireAuth>
   );
 }

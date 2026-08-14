@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, MapPin } from "lucide-react";
 import { unifedApi, getToken, type OpportunityDTO } from "@/lib/api";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { SectionHeader, IconBadge, Card } from "@/components/ui/Card";
 
 /** Career Hub (Phase 2): browse opportunities, apply, and save. */
@@ -24,7 +23,7 @@ export default function CareerPage() {
   });
 
   return (
-    <RequireAuth>
+    <>
       <div className="space-y-6">
         <SectionHeader title="Career Hub" eyebrow="Internships, graduate roles & gigs" />
         <div className="space-y-3">
@@ -75,6 +74,6 @@ export default function CareerPage() {
           )}
         </div>
       </div>
-    </RequireAuth>
+    </>
   );
 }
