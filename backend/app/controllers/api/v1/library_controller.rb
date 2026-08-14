@@ -2,12 +2,12 @@ module Api
   module V1
     # Library endpoints (Phase 2 depth): catalogue search, borrow, return.
     class LibraryController < BaseController
-      before_action :authenticate!
+      skip_before_action :authenticate!, only: %i[resources]
 
-      # GET /api/v1/library/resources?q=&type=
+      # GET /api/v1/library/resources?q=&type=  (public browse; scoped to node university)
       def resources
-        uni = @current_university
-        return render_unauthorized("unknown_node") unless uni
+        uni = node_university
+        return render_unauthorized("node_not_configured") unless uni
         items = Library::LibraryService.search(uni.id, query: params[:q], type: params[:type])
         render json: items.map { |r|
           { id: r.id, title: r.title, author: r.author, type: r.resource_type,

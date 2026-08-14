@@ -17,6 +17,9 @@ uni = Academic::University.find_or_create_by!(slug: "adun") do |u|
   u.short_name = "ADUN"
   u.country_iso = "NG"
 end
+# Ensure the matric-validation pattern exists so the demo student's matric
+# (and self-signup matric linkage) validate against the university scheme.
+uni.update!(config_json: (uni.config_json || {}).merge("matric_pattern" => "ADUN/{FAC}/{DEPT}/{YEAR}/{SEQ}")) if uni.config_json.dig("matric_pattern").blank?
 puts "university: #{uni.slug} (#{uni.id})"
 
 # --- Demo student account + academic actor ---
@@ -77,4 +80,60 @@ Academic::Event.find_or_create_by!(university: uni, title: "SIWES Window Opens",
   e.event_end = 100.days.from_now
 end
 puts "calendar events seeded"
+
+# --- Member role (for self-signup default assignment) ---
+Identity::Role.find_or_create_by!(university_id: uni.id, name: "member") do |r|
+  r.permissions = []
+end
+
+# --- Demo course catalogue (Cyber Security programme) ---
+faculty = Academic::Faculty.find_or_create_by!(university: uni, code: "eng") { |f| f.name = "Engineering" }
+dept = Academic::Department.find_or_create_by!(faculty: faculty, code: "csc") { |d| d.name = "Computer Science" }
+prog = Academic::Programme.find_or_create_by!(department: dept, code: "CSC") do |p|
+  p.name = "Computer Science"
+  p.degree_type = "B.Sc"
+  p.duration_years = 4
+end
+
+demo_courses = [
+  ["CYB 301", "Introduction to Cybersecurity", 3, 300, 1],
+  ["CYB 302", "Cloud Computing", 2, 300, 2],
+  ["CSC 305", "Computer Networks", 3, 300, 1],
+  ["CSC 307", "Operating Systems", 3, 300, 2],
+  ["CSC 309", "Database Systems", 3, 300, 1],
+  ["CSC 311", "Software Engineering", 2, 300, 2],
+  ["CSC 313", "Web Technologies", 2, 300, 1],
+  ["CYB 304", "Information Assurance", 2, 300, 2],
+  ["CYB 305", "Digital Forensics", 3, 400, 1],
+  ["CSC 315", "Data Structures & Algorithms", 3, 300, 2]
+]
+demo_courses.each do |code, title, credits, level, sem|
+  Academic::Course.find_or_create_by!(programme: prog, code: code) do |c|
+    c.title = title
+    c.credit_units = credits
+    c.level = level
+    c.semester = sem
+  end
+end
+puts "demo courses seeded: #{demo_courses.size}"
+
+# --- Demo library resources ---
+demo_resources = [
+  ["Cybersecurity Lecture Notes", "Dr. A. Bello", "ebook"],
+  ["Operating Systems Study Guide", "Prof. C. Eze", "book"],
+  ["Networks Past Questions", "ADUN Exam Board", "past_question"],
+  ["Database Systems Reference", "O. Ibrahim", "reference"],
+  ["Software Engineering Handbook", "J. Okoro", "book"],
+  ["Digital Forensics Lab Manual", "M. Abubakar", "ebook"],
+  ["Web Technologies Cheat Sheet", "S. Musa", "reference"],
+  ["Cloud Computing Overview", "K. Adeyemi", "journal"]
+]
+demo_resources.each do |title, author, type|
+  Library::LibraryResource.find_or_create_by!(university: uni, title: title) do |r|
+    r.author = author
+    r.resource_type = type
+  end
+end
+puts "demo library resources seeded: #{demo_resources.size}"
+
 puts "SEED COMPLETE"

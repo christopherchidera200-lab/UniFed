@@ -2,7 +2,7 @@ module Api
   module V1
     # Course Catalogue / browse endpoints (Phase 2).
     class CatalogController < BaseController
-      before_action :authenticate!
+      skip_before_action :authenticate!, only: %i[courses offerings]
 
       # GET /api/v1/catalog/courses?programme_id=&level=&semester=&q=
       def courses

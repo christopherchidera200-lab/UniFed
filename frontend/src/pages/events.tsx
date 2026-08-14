@@ -17,7 +17,7 @@ export default function EventsPage() {
   const token = getToken();
   const events = useQuery<EventDTO[]>({
     queryKey: ["events"],
-    queryFn: () => unifedApi.events(token),
+    queryFn: () => unifedApi.events(),
     enabled: Boolean(token)
   });
 

@@ -2,7 +2,22 @@ module Api
   module V1
     # Authentication endpoints (Phase 0). Issues JWTs via Identity::TokenService.
     class AuthController < BaseController
-      skip_before_action :authenticate!, only: %i[login refresh mfa_verify]
+      skip_before_action :authenticate!, only: %i[login register refresh mfa_verify]
+
+      # POST /api/v1/auth/register  {name, email, password, matric_no?}
+      # -> {access_token, refresh_token} (auto-login) or {error, reason}
+      def register
+        result = Identity::RegistrationService.register(
+          params: params.permit(:name, :display_name, :email, :password, :matric_no),
+          ip: request.remote_ip,
+          user_agent: request.user_agent
+        )
+        if result.success?
+          render json: result.tokens.merge(expires_in: Identity::TokenService::ACCESS_TTL.to_i), status: result.status
+        else
+          render json: { error: result.reason }, status: result.status
+        end
+      end
 
       # POST /api/v1/auth/login  {email, password}
       # -> {access_token, refresh_token} OR {mfa_required, pre_auth_token}

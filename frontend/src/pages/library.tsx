@@ -9,7 +9,7 @@ export default function LibraryPage() {
   const token = getToken();
   const resources = useQuery<LibraryResourceDTO[]>({
     queryKey: ["library-resources"],
-    queryFn: () => unifedApi.libraryResources(token),
+    queryFn: () => unifedApi.libraryResources(),
     enabled: Boolean(token)
   });
 

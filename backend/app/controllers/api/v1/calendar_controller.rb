@@ -2,12 +2,12 @@ module Api
   module V1
     # Event Calendar endpoints (Phase 2) over the existing events table.
     class CalendarController < BaseController
-      before_action :authenticate!
+      skip_before_action :authenticate!, only: %i[events]
 
-      # GET /api/v1/calendar/events?from=&to=&type=
+      # GET /api/v1/calendar/events?from=&to=&type=  (public browse; scoped to node university)
       def events
-        university = @current_university
-        return render_unauthorized("unknown_node") unless university
+        university = node_university
+        return render_unauthorized("node_not_configured") unless university
 
         events = if params[:from].present? && params[:to].present?
           Calendar::CalendarService.in_range(

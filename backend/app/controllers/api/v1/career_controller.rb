@@ -2,9 +2,9 @@ module Api
   module V1
     # Career Hub endpoints (Phase 2).
     class CareerController < BaseController
-      before_action :authenticate!
+      skip_before_action :authenticate!, only: %i[opportunities]
 
-      # GET /api/v1/career/opportunities?employment_type=&location_type=&level=&q=
+      # GET /api/v1/career/opportunities?employment_type=&location_type=&level=&q=  (public browse)
       def opportunities
         opps = Career::CareerService.search(index_filters)
         render json: opps.map { |o| opportunity_json(o) }

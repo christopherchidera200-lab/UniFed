@@ -9,7 +9,7 @@ export default function CatalogPage() {
   const q = "";
   const courses = useQuery<CourseDTO[]>({
     queryKey: ["catalog-courses", q],
-    queryFn: () => unifedApi.catalogCourses(token, q ? { q } : {}),
+    queryFn: () => unifedApi.catalogCourses(q ? { q } : {}),
     enabled: Boolean(token)
   });
 

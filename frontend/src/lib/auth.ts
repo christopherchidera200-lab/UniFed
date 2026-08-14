@@ -54,3 +54,9 @@ export function logout(): void {
   store()?.removeItem(ACCESS_KEY);
   store()?.removeItem(REFRESH_KEY);
 }
+
+/** Persist tokens into the existing session store (used after registration auto-login). */
+export function storeTokens(tokens: { access_token: string; refresh_token: string }): void {
+  store()?.setItem(ACCESS_KEY, tokens.access_token);
+  store()?.setItem(REFRESH_KEY, tokens.refresh_token);
+}

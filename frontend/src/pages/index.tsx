@@ -13,12 +13,12 @@ export default function HomePage() {
 
   const courses = useQuery({
     queryKey: ["home-courses"],
-    queryFn: () => unifedApi.catalogCourses(token),
+    queryFn: () => unifedApi.catalogCourses(),
     enabled: Boolean(token)
   });
   const events = useQuery<EventDTO[]>({
     queryKey: ["home-events"],
-    queryFn: () => unifedApi.events(token),
+    queryFn: () => unifedApi.events(),
     enabled: Boolean(token)
   });
 

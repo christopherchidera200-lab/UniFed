@@ -10,7 +10,7 @@ export default function CareerPage() {
 
   const opportunities = useQuery<OpportunityDTO[]>({
     queryKey: ["opportunities"],
-    queryFn: () => unifedApi.opportunities(token),
+    queryFn: () => unifedApi.opportunities(),
     enabled: Boolean(token)
   });
 

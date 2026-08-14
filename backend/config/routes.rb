@@ -15,6 +15,7 @@ Rails.application.routes.draw do
 
       # Phase 0 — Identity / Auth
       post "auth/login", to: "auth#login"
+      post "auth/register", to: "auth#register"
       post "auth/mfa/verify", to: "auth#mfa_verify"
       post "auth/refresh", to: "auth#refresh"
       post "auth/logout", to: "auth#logout"
@@ -75,7 +76,8 @@ Rails.application.routes.draw do
       end
 
       # Phase 1 — Profile
-      resource :profile, only: %i[show update]
+      get "profile", to: "profile#show"
+      patch "profile", to: "profile#update"
 
       # Phase 2 — Course Catalogue (browse)
       resources :catalog, only: [] do
