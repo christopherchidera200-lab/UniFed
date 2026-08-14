@@ -50,7 +50,8 @@ async function shot(page: any, path: string, file: string, dark = false) {
       localStorage.setItem("unifed-theme", "dark");
       document.documentElement.classList.add("dark");
     });
-    await page.reload();
+    // Tailwind `dark:` styles apply immediately once the class is on <html>;
+    // a full reload is unnecessary and can hang the dev server's HMR load event.
   }
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `${OUT}/${file}`, fullPage: true });
