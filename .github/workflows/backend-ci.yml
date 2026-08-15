@@ -21,7 +21,7 @@ jobs:
       PGPASSWORD: postgres
       DATABASE_URL: postgres://localhost:5432/unifed_test
       REDIS_URL: redis://localhost:6379/0
-      OIDC_JWKS_PRIVATE: ci-insecure-not-for-prod
+      OIDC_JWKS_PRIVATE: ci-strong-test-secret-please-rotate-do-not-use-in-prod-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     defaults:
       run:
         working-directory: backend
