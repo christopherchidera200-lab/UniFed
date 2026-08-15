@@ -2,6 +2,8 @@
 require_relative "../app/models/federation/actor"
 require_relative "../app/models/federation/activity"
 require_relative "../app/models/federation/delivery"
+require_relative "../app/models/federation/follow"
+require_relative "../app/models/federation/processed_activity"
 require_relative "../app/services/federation/webfinger_service"
 require_relative "../app/services/federation/signature_verifier"
 require_relative "../app/services/federation/delivery_service"

@@ -74,6 +74,12 @@ FactoryBot.define do
 
   factory :student, class: "Academic::Student" do
     association :university
+    factory :student_enrollment, class: "Academic::StudentEnrollment" do
+      association :student
+      association :programme
+      association :academic_session
+    end
+
     matric_no { generate(:matric_no) }
     entry_year { 2023 }
     entry_mode { "UTME" }
@@ -86,6 +92,61 @@ FactoryBot.define do
     association :academic_session
     semester_number { 1 }
     association :lecturer
+  end
+
+  # ---- Phase 2: LMS / Assignments ----
+  # ---- Phase 2: Research Hub ----
+  factory :research_profile, class: "Research::ResearchProfile" do
+    association :user, factory: :identity_user
+    association :university
+    title { "Dr. Researcher" }
+    orcid { "0000-0002-1825-0097" }
+    research_fields { ["Machine Learning"] }
+    citations_count { 12 }
+  end
+
+  factory :research_group, class: "Research::ResearchGroup" do
+    association :university
+    name { "AI Lab" }
+  end
+
+  factory :research_group_membership, class: "Research::GroupMembership" do
+    association :group, factory: :research_group
+    association :user, factory: :identity_user
+    role { "member" }
+  end
+
+  factory :research_publication, class: "Research::Publication" do
+    association :group, factory: :research_group
+    association :university
+    title { "A Paper" }
+    authors { ["A. Author"] }
+    year { 2024 }
+  end
+
+  factory :research_project, class: "Research::ResearchProject" do
+    association :group, factory: :research_group
+    association :university
+    title { "Project X" }
+    status { "active" }
+  end
+
+  factory :lms_assignment, class: "Lms::Assignment" do
+    association :course_offering
+    association :lecturer
+    title { "Essay 1" }
+    description { "Write about networks" }
+    max_score { 100.0 }
+    published { true }
+    due_at { 2.weeks.from_now }
+  end
+
+  factory :lms_submission, class: "Lms::Submission" do
+    association :assignment, factory: :lms_assignment
+    association :student
+    body { "My answer" }
+    status { "submitted" }
+    submitted_at { Time.current }
   end
 
   factory :grade_record, class: "Records::GradeRecord" do
@@ -173,6 +234,16 @@ FactoryBot.define do
   end
 
   # ---- Phase 1: Federation ----
+  factory :federation_follow, class: "Federation::Follow" do
+    association :followed_actor, factory: :federation_actor
+    follower_uri { "https://remote.edu/actors/bob@remote.edu" }
+  end
+
+  factory :federation_processed_activity, class: "Federation::ProcessedActivity" do
+    ap_id { "https://remote.edu/activities/#{SecureRandom.hex(6)}" }
+    actor_uri { "https://remote.edu/actors/bob@remote.edu" }
+  end
+
   factory :federation_actor, class: "Federation::Actor" do
     association :university
     actor_type { "university" }
@@ -328,7 +399,27 @@ FactoryBot.define do
     status { "unread" }
   end
 
-  # ---- Phase 2 depth: Examinations ----
+  # ---- Phase 2: Campus / Smart-Campus (GIS) ----
+  factory :campus_campus, class: "Campus::Campus" do
+    association :university
+    name { "Main Campus" }
+    address { "Km 3, Ibusa Road, Asaba" }
+    center_lat { 6.5244 }
+    center_lng { 3.3792 }
+  end
+
+  factory :campus_place, class: "Campus::Place" do
+    association :university
+    association :campus, factory: :campus_campus
+    name { "Main Library" }
+    kind { "library" }
+    description { "Central library" }
+    lat { 6.5244 }
+    lng { 3.3792 }
+    accessibility_level { 1 }
+  end
+
+  # ---- Phase 2: Assignments / LMS ----
   factory :exam_schedule, class: "Examination::ExamSchedule" do
     association :university
     association :course_offering

@@ -145,6 +145,42 @@ Rails.application.routes.draw do
           post "opportunities/:id/save", to: "career#save_job"
         end
       end
+
+      # Phase 2 — Campus / Smart-Campus (GIS) discovery
+      resources :campus, only: [:index, :show, :create] do
+        collection do
+          get "places", to: "campus#index"
+          get "places/:id", to: "campus#show"
+          get "near", to: "campus#near"
+          post "places", to: "campus#create"
+        end
+      end
+      # Phase 2 - Assignments / LMS (lecturer authors + grades; student submits)
+      resources :assignments, only: [:index, :show, :create] do
+        member do
+          post "submit", to: "assignments#submit"
+          get "submissions", to: "assignments#submissions"
+          patch "submissions/:submission_id", to: "assignments#grade"
+        end
+      end
+      # Phase 2 - Research Hub
+      resources :research, only: [] do
+        collection do
+          get "profiles", to: "research#profiles"
+          get "groups", to: "research#groups"
+          post "groups", to: "research#create_group"
+          get "groups/:id", to: "research#show_group"
+          post "groups/:id/members", to: "research#add_member"
+        end
+      end
+      # Phase 2 - Administration portal (RBAC-guarded)
+      resources :admin, only: [] do
+        collection do
+          get "users", to: "admin#users"
+          get "stats", to: "admin#stats"
+          post "users/:id/roles", to: "admin#assign_role"
+        end
+      end
     end
   end
 end

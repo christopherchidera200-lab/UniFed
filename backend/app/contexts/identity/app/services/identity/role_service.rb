@@ -28,7 +28,7 @@ module Identity
     def self.seed_baseline_roles(university)
       baseline = {
         "student" => ["academic:read", "student_id:view", "profile:manage:self"],
-        "staff"   => ["academic:read", "academic:write", "student_id:issue", "profile:manage:self"],
+        "staff"   => ["academic:read", "academic:write", "student_id:issue", "profile:manage:self", "campus:manage"],
         "admin"   => ["admin:users", "admin:results", "admin:announcements", "admin:moderation",
                       "academic:read", "academic:write", "student_id:issue"]
       }
