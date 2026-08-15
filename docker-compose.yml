@@ -59,7 +59,7 @@ services:
       RAILS_FORCE_SSL: "false"
       # --- Node identity + federation (staging). Coolify must override these. ---
       NODE_SLUG: ${NODE_SLUG:-adun-staging}
-      NODE_UNIVERSITY_ID: ${NODE_UNIVERSITY_ID:-00000000-0000-0000-0000-000000000000}
+      NODE_UNIVERSITY_ID: ${NODE_UNIVERSITY_ID:-4c1f4145-3946-4dbf-9bd1-8134ebb65f28}
       OIDC_ISSUER: ${OIDC_ISSUER:-https://api-staging.unifed.ng}
       OIDC_KID: ${OIDC_KID:-unifed-staging-1}
       FEDERATION_ENABLED: ${FEDERATION_ENABLED:-true}
