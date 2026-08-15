@@ -28,12 +28,13 @@
 - **Evidence:** `token_service.rb:7,42-50`; `oidc_issuer_service.rb`.
 - **Remediation:** Pin `alg` on verify; add `verify_aud` with a configured audience; unify token subsystem on RS256 verified against JWKS (or HS256 consistently).
 
-### F-03 — Rate limiter trusts attacker-controlled X-Forwarded-For (MEDIUM, DYNAMICALLY CONFIRMED)
+### F-03 — Rate limiter trusted attacker-controlled X-Forwarded-For (MEDIUM, DYNAMICALLY CONFIRMED, **REMEDIATED IN CODE**)
 - **Severity:** MEDIUM
 - **Component:** `backend/lib/rate_limit_middleware.rb:20`
-- **Dynamic PoC:** 200 rapid GETs to `/api/v1/catalog/courses`, each with a distinct `X-Forwarded-For` header → **200 ×199, 0 ×429**. Limiter keyed on the spoofable header, so throttling is fully bypassable.
-- **Impact:** Enables credential stuffing / scraping / abuse despite `RATE_LIMIT_ENABLED=true`. (Fails open on Redis error — acceptable for availability but means no enforcement if Redis down.)
-- **Remediation:** Use `request.remote_ip` with `config.action_dispatch.trusted_proxies` set to the proxy range, or read a CDN-signed client-IP header. Never parse raw XFF.
+- **Dynamic PoC (pre-fix):** 200 rapid GETs to `/api/v1/catalog/courses`, each with a distinct `X-Forwarded-For` header → **200 ×199, 0 ×429**. Limiter keyed on the spoofable header, so throttling was fully bypassable.
+- **Fix (commit after `f2e35a4`):** `RateLimitMiddleware#call` now derives the client IP via `ActionDispatch::Request#remote_ip` (honours `config.action_dispatch.trusted_proxies`, set to the reverse-proxy range in production) instead of parsing raw `HTTP_X_FORWARDED_FOR`. Regression spec `spec/requests/rate_limit_spec.rb` proves a fixed `REMOTE_ADDR` with rotating XFF still hits the 429 cap.
+- **Impact:** Enables credential stuffing / scraping / abuse despite `RATE_LIMIT_ENABLED=true` (pre-fix). (Still fails open on Redis error — acceptable for availability.)
+- **Status:** RESOLVED.
 
 ### F-04 — Federation remote key resolution unimplemented (SSRF latent) (MEDIUM)
 - **Severity:** MEDIUM
@@ -60,19 +61,21 @@
 - **Description:** opensearch/minio passwords committed in plaintext (not the staging compose, but committed and copyable).
 - **Remediation:** Move to `${VAR:-...}` placeholders / Coolify secrets.
 
-### F-09 — Notifications `read` missing ownership (BOLA, LOW) — NEW this assessment
+### F-09 — Notifications `read` missing ownership (BOLA, LOW) — **REMEDIATED IN CODE**
 - **Severity:** LOW
 - **Component:** `notifications_controller.rb#read`
-- **Description:** `NotificationService.mark_read!(id: params[:id])` with **no ownership check** → any authenticated user can mark another user's notification read by guessing its id.
-- **Impact:** Read-receipt spoofing / minor integrity.
-- **Remediation:** Scope by `user: current_user` (or verify `notification.user_id == current_user.id`).
+- **Description (pre-fix):** `NotificationService.mark_read!(id: params[:id])` with **no ownership check** → any authenticated user could mark another user's notification read by guessing its id.
+- **Fix (commit after `f2e35a4`):** `read` now scopes via `NotificationService.unread_for(user: current_user).find_by(id: params[:id])` → cross-user id returns 404. Regression spec in `spec/requests/bola_regression_spec.rb` asserts another user's notification stays `unread` (404) while your own returns 200.
+- **Impact:** Read-receipt spoofing / minor integrity (pre-fix).
+- **Status:** RESOLVED.
 
-### F-10 — Library loan `return` missing ownership (BOLA, MEDIUM) — NEW this assessment
+### F-10 — Library loan `return` missing ownership (BOLA, MEDIUM) — **REMEDIATED IN CODE**
 - **Severity:** MEDIUM
 - **Component:** `library_controller.rb#return_resource`
-- **Description:** `LibraryLoan.find_by(id: params[:loan_id])` with **no ownership/role check** → any authenticated user can return/alter another user's loan. (`borrow` is correctly self-scoped via `current_student`.)
-- **Impact:** Suppress/alter another user's loan state (integrity + possible abuse).
-- **Remediation:** Scope loan to `student: current_student` (or `loan.student.identity_subject == current_subject`); forbid cross-user.
+- **Description (pre-fix):** `LibraryLoan.find_by(id: params[:loan_id])` with **no ownership/role check** → any authenticated user could return/alter another user's loan. (`borrow` is correctly self-scoped via `current_student`.)
+- **Fix (commit after `f2e35a4`):** `return_resource` now resolves `Library::LibraryLoan.find_by(id: params[:loan_id], student_id: current_student.id)` → cross-user loan returns 404. Regression spec in `spec/requests/bola_regression_spec.rb` asserts another user's loan stays `borrowed` (404) while your own returns 200/`returned`.
+- **Impact:** Suppress/alter another user's loan state (integrity + possible abuse) (pre-fix).
+- **Status:** RESOLVED.
 
 ### F-11 — Postgres/Redis exposed on 0.0.0.0 (MEDIUM) — NEW this assessment
 - **Severity:** MEDIUM
@@ -106,10 +109,11 @@
 ---
 
 ## Severity distribution (this assessment)
-- CRITICAL: **1** (F-01, dynamically confirmed)
+- CRITICAL: **1** (F-01, dynamically confirmed — **REMEDIATED**: fail-closed secret)
 - HIGH: **1** (F-02)
-- MEDIUM: **7** (F-03, F-04, F-05, F-06, F-07, F-10, F-11, F-12)
-- LOW: **2** (F-09, F-13)
+- MEDIUM: **8** (F-03 ✅fixed, F-04, F-05, F-06, F-07, F-10 ✅fixed, F-11, F-12)
+- LOW: **2** (F-09 ✅fixed, F-13)
+- **Code-remediated this engagement:** F-01, F-03, F-09, F-10 (4 of 12). Remaining: F-02, F-04, F-05, F-06, F-07, F-11, F-12 (config/federation hardening) + F-13 (dev-dep hygiene).
 - INFORMATIONAL: 0 (prior I-01..I-05 folded into positives/notes)
 
 ## Overall verdict

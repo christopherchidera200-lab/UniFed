@@ -30,8 +30,11 @@ module Api
       end
 
       # POST /api/v1/library/return  { loan_id }
+      # Ownership-scoped (F-10): a student may only return THEIR OWN loan.
       def return_resource
-        loan = Library::LibraryLoan.find_by(id: params[:loan_id])
+        student = current_student
+        return render_unauthorized("no_student_link") unless student
+        loan = Library::LibraryLoan.find_by(id: params[:loan_id], student_id: student.id)
         return render json: { error: "not_found" }, status: :not_found unless loan
         returned = Library::LibraryService.return!(loan: loan)
         render json: { loan_id: returned.id, status: returned.status }

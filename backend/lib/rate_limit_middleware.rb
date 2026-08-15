@@ -17,7 +17,12 @@ class RateLimitMiddleware
   def call(env)
     return @app.call(env) unless @enabled
 
-    ip = env["HTTP_X_FORWARDED_FOR"]&.split(",")&.first || env["REMOTE_ADDR"]
+    # F-03: never trust a raw, attacker-controlled X-Forwarded-For. Derive the
+    # client IP via ActionDispatch::Request#remote_ip, which honours
+    # config.action_dispatch.trusted_proxies (set to the reverse-proxy range in
+    # production) and ignores spoofable headers. Falls back to REMOTE_ADDR.
+    req = ActionDispatch::Request.new(env)
+    ip = req.remote_ip || env["REMOTE_ADDR"]
     key = "ratelimit:#{ip}:#{env['PATH_INFO']}"
     count = @redis.multi do |r|
       r.incr(key)

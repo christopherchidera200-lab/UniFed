@@ -49,20 +49,19 @@ Set `config.x.oidc_audience` (e.g. `https://api.unifed.ng`). Unify the OIDC issu
 
 ---
 
-## P1 — Rate-limit client-IP trust (F-03)  [config, not code]
+## P1 — Rate-limit client-IP trust (F-03)  [DONE — committed after f2e35a4]
 
-`RateLimitMiddleware` reads raw `HTTP_X_FORWARDED_FOR`. Replace with trusted-proxy-aware IP:
+`RateLimitMiddleware` previously read raw `HTTP_X_FORWARDED_FOR`. Now replaced with trusted-proxy-aware IP:
 ```ruby
-# config/environments/production.rb
-config.action_dispatch.trusted_proxies = [IPAddr.new("10.0.0.0/8"), IPAddr.new("172.16.0.0/12")] # Coolify proxy range
-# middleware:
-ip = request.remote_ip   # respects trusted_proxies, ignores raw XFF
+# lib/rate_limit_middleware.rb#call
+req = ActionDispatch::Request.new(env)
+ip = req.remote_ip || env["REMOTE_ADDR"]
 ```
-Until then, the limiter is bypassable. Fails-open on Redis is acceptable but document it.
+`req.remote_ip` honours `config.action_dispatch.trusted_proxies` (set to the reverse-proxy range in production) and ignores spoofable headers. Regression spec `spec/requests/rate_limit_spec.rb` proves a fixed `REMOTE_ADDR` with rotating XFF still hits the 429 cap. (Still fails open on Redis error — acceptable for availability.)
 
 ---
 
-## P2 — Object-level authorization (BOLA) (F-09, F-10)
+## P2 — Object-level authorization (BOLA) (F-09, F-10)  [DONE — committed after f2e35a4]
 
 **F-09 — notifications `read`:**
 ```ruby
@@ -71,7 +70,7 @@ def read
                                    .find_by(id: params[:id])
   return render json: { error: "not_found" }, status: :not_found unless item
   Notification::NotificationService.mark_read!(id: item.id)
-  render json: { id: item.id, status: "read" }
+  render json: { id: item.id, status: item.status }
 end
 ```
 
@@ -80,13 +79,15 @@ end
 def return_resource
   student = current_student
   return render_unauthorized("no_student_link") unless student
-  loan = student.library_loans.find_by(id: params[:loan_id])   # ownership-scoped
+  loan = Library::LibraryLoan.find_by(id: params[:loan_id], student_id: student.id)  # ownership-scoped
   return render json: { error: "not_found" }, status: :not_found unless loan
   returned = Library::LibraryService.return!(loan: loan)
   render json: { loan_id: returned.id, status: returned.status }
 end
 ```
-Add regression specs asserting cross-user access returns 404/403.
+Regression specs in `spec/requests/bola_regression_spec.rb` assert cross-user access returns 404 (object stays unchanged) while own access succeeds. Backend RSpec green (145/0 incl. the 2 new specs).
+
+---
 
 ---
 

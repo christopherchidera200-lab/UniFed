@@ -14,9 +14,12 @@ module Api
       end
 
       # POST /api/v1/notifications/:id/read
+      # Ownership-scoped (F-09): a user may only mark THEIR OWN notification read.
       def read
-        item = Notification::NotificationService.mark_read!(id: params[:id])
+        item = Notification::NotificationService.unread_for(user: current_user)
+                                     .find_by(id: params[:id])
         return render json: { error: "not_found" }, status: :not_found unless item
+        Notification::NotificationService.mark_read!(id: item.id)
         render json: { id: item.id, status: item.status }
       end
 
