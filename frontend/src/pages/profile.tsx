@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { User, Mail, GraduationCap, LogOut, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { User, Mail, GraduationCap, LogOut, AlertTriangle, ShieldCheck } from "lucide-react";
 import { unifedApi, getToken, type ProfileDTO } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
@@ -99,6 +100,21 @@ export default function ProfilePage() {
                 </div>
               </Card>
             </div>
+
+            {profile.data.actor_type === "admin" && (
+              <Link
+                href="/admin"
+                className="card card-hover flex items-center gap-3 p-4"
+              >
+                <IconBadge className="bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">
+                  <ShieldCheck size={18} />
+                </IconBadge>
+                <div>
+                  <div className="font-medium text-ink">Administration</div>
+                  <div className="text-ink-subtle text-xs">Manage users, roles, and node stats</div>
+                </div>
+              </Link>
+            )}
           </>
         )}
 

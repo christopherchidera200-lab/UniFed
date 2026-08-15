@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Plus, Image as ImageIcon, Send, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Image as ImageIcon, Send, AlertTriangle, CheckCircle2, FileText } from "lucide-react";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
 import { RequireAuth } from "@/components/auth/RequireAuth";
-import { unifedApi, getToken } from "@/lib/api";
+import { unifedApi, getToken, type ProfileDTO } from "@/lib/api";
+import Link from "next/link";
 
 /** Create — compose a post / announcement to the university community. */
 export default function CreatePage() {
@@ -11,6 +13,11 @@ export default function CreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [posted, setPosted] = useState(false);
+
+  const profile = useQuery<ProfileDTO>({
+    queryKey: ["profile"], queryFn: () => unifedApi.profile(token), enabled: Boolean(token)
+  });
+  const isLecturer = profile.data?.actor_type === "staff" || profile.data?.actor_type === "admin";
 
   async function handlePost() {
     const body = text.trim();
@@ -79,6 +86,18 @@ export default function CreatePage() {
       <p className="text-ink-muted text-xs text-center">
         Posts publish to your university&apos;s federated timeline.
       </p>
+
+      {isLecturer && (
+        <Link href="/assignments" className="card card-hover flex items-center gap-3 p-4">
+          <IconBadge className="bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">
+            <FileText size={18} />
+          </IconBadge>
+          <div>
+            <div className="font-medium text-ink">Manage Assignments</div>
+            <div className="text-ink-subtle text-xs">Create and grade coursework for your courses</div>
+          </div>
+        </Link>
+      )}
     </div>
     </RequireAuth>
   );

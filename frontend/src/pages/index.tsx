@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Briefcase, Library, CalendarDays, Sparkles } from "lucide-react";
+import { BookOpen, Briefcase, Library, CalendarDays, Sparkles, FileText, FlaskConical } from "lucide-react";
 import { unifedApi, getToken, type EventDTO, type ProfileDTO } from "@/lib/api";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
@@ -37,8 +37,10 @@ export default function HomePage() {
 
   const shortcuts = [
     { href: "/catalog", label: "Catalogue", icon: BookOpen, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300" },
+    { href: "/assignments", label: "Assignments", icon: FileText, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300" },
     { href: "/career", label: "Careers", icon: Briefcase, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300" },
     { href: "/library", label: "Library", icon: Library, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300" },
+    { href: "/research", label: "Research", icon: FlaskConical, tint: "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300" },
     { href: "/events", label: "Events", icon: CalendarDays, tint: "bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300" }
   ];
 

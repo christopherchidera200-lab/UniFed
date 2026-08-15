@@ -77,6 +77,67 @@ test.beforeEach(async ({ page }) => {
       ])
     })
   );
+  // Phase 3 — campus (public), assignments (token), research (public), admin (token).
+  await page.route("**/api/v1/campus/places*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        { id: "p1", campus_id: "c1", university_id: "u1", name: "Main Library", kind: "library",
+          description: "Central collection", lat: 5.1, lng: 7.2, accessibility_level: "full", metadata: {} }
+      ])
+    })
+  );
+  await page.route("**/api/v1/assignments*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        { id: "a1", course_offering_id: "co1", lecturer_id: "l1", title: "Essay 1",
+          description: "Write about federation", instructions: null, max_score: 100,
+          due_at: "2026-09-30T23:59:00Z", published: true, my_submission: null }
+      ])
+    })
+  );
+  await page.route("**/api/v1/research/profiles*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        { id: "rp1", user_id: "u1", title: "Dr. Chidera", bio: null, orcid: null,
+          research_fields: ["ML", "Security"], citations_count: 42 }
+      ])
+    })
+  );
+  await page.route("**/api/v1/research/groups*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        { id: "g1", name: "FedML Lab", description: "Federated learning research", lead_id: "u1" }
+      ])
+    })
+  );
+  await page.route("**/api/v1/admin/stats*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ users: 3, roles: 2, research_groups: 1, campus_places: 5, assignments: 4 })
+    })
+  );
+  await page.route("**/api/v1/admin/users*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        users: [
+          { id: "u1", email: "student@adun.edu.ng", username: null, display_name: "Christopher",
+            actor_type: "student", status: "active", roles: ["student"] }
+        ],
+        total: 1
+      })
+    })
+  );
 });
 
 test("logs in and browses the course catalogue", async ({ page }) => {
@@ -127,6 +188,47 @@ test("create page submits a valid post", async ({ page }) => {
   await page.fill("textarea", "Hello federation");
   await page.getByRole("button", { name: "Post" }).click();
   await expect(page.getByText("Posted to your community.")).toBeVisible();
+});
+
+test("smart campus page renders places", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', "student@adun.edu.ng");
+  await page.fill('input[type="password"]', "Passw0rd!");
+  await page.click('button[type="submit"]');
+  await page.goto("/campus");
+  await expect(page.getByText("Smart Campus")).toBeVisible();
+  await expect(page.getByText("Main Library")).toBeVisible();
+});
+
+test("assignments page renders the student view", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', "student@adun.edu.ng");
+  await page.fill('input[type="password"]', "Passw0rd!");
+  await page.click('button[type="submit"]');
+  await page.goto("/assignments");
+  await expect(page.getByText("Assignments")).toBeVisible();
+  await expect(page.getByText("Essay 1")).toBeVisible();
+});
+
+test("research hub renders profiles and groups", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', "student@adun.edu.ng");
+  await page.fill('input[type="password"]', "Passw0rd!");
+  await page.click('button[type="submit"]');
+  await page.goto("/research");
+  await expect(page.getByText("Research Hub")).toBeVisible();
+  await expect(page.getByText("Dr. Chidera")).toBeVisible();
+  await expect(page.getByText("FedML Lab")).toBeVisible();
+});
+
+test("administration page renders stats and users", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', "student@adun.edu.ng");
+  await page.fill('input[type="password"]', "Passw0rd!");
+  await page.click('button[type="submit"]');
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
+  await expect(page.getByText("Christopher")).toBeVisible();
 });
 
 test("academic records uses the authenticated student identity", async ({ page }) => {
