@@ -16,7 +16,7 @@ RSpec.describe "Seed idempotency (db/seeds.rb)", type: :request do
   it "creates demo course + library content on a fresh seed" do
     load Rails.root.join("db/seeds.rb")
     expect(Academic::Course.where(code: "CYB 301").exists?).to be true
-    expect(Library::LibraryResource.where(title: "Introduction to Cybersecurity — Lecture Notes").exists?).to be true
+    expect(Library::LibraryResource.where(title: "Cybersecurity Lecture Notes").exists?).to be true
     expect(Identity::Role.where(name: "member").exists?).to be true
   end
 end

@@ -122,10 +122,10 @@ demo_resources = [
   ["Cybersecurity Lecture Notes", "Dr. A. Bello", "ebook"],
   ["Operating Systems Study Guide", "Prof. C. Eze", "book"],
   ["Networks Past Questions", "ADUN Exam Board", "past_question"],
-  ["Database Systems Reference", "O. Ibrahim", "reference"],
+  ["Database Systems Reference", "O. Ibrahim", "ebook"],
   ["Software Engineering Handbook", "J. Okoro", "book"],
   ["Digital Forensics Lab Manual", "M. Abubakar", "ebook"],
-  ["Web Technologies Cheat Sheet", "S. Musa", "reference"],
+  ["Web Technologies Cheat Sheet", "S. Musa", "ebook"],
   ["Cloud Computing Overview", "K. Adeyemi", "journal"]
 ]
 demo_resources.each do |title, author, type|

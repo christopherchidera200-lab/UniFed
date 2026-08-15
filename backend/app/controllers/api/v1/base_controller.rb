@@ -42,6 +42,16 @@ module Api
         Identity::TokenService.secret
       end
 
+      # The local federation node's university, resolved from deployment config
+      # (NODE_UNIVERSITY_ID). Used by PUBLIC browse endpoints that do not require
+      # an authenticated caller — they scope data to the node's own university.
+      # Returns nil (never raises) when the node is not configured, so callers
+      # can degrade gracefully (empty results / a clear 401) instead of 500ing.
+      def node_university
+        id = UniFed::Application.config.x.node_university_id
+        @node_university ||= id ? Academic::University.find_by(id: id) : nil
+      end
+
       def render_unauthorized(reason)
         render json: { error: "unauthorized", reason: reason }, status: :unauthorized
       end

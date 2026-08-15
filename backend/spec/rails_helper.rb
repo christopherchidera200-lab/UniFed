@@ -61,9 +61,11 @@ end
 require "rspec/rails"
 require "factory_bot_rails"
 
-# Load factories (flat file at spec/factories.rb; factory_bot_rails only
-# auto-discovers spec/factories/**/*.rb, so require it explicitly).
-require Rails.root.join("spec/factories")
+# Factories live in the flat file spec/factories.rb. factory_bot_rails'
+# definition glob (spec/factories/**/*.rb, which also matches the flat file)
+# auto-loads them during the Rails boot, so do NOT require them explicitly
+# here — a second load re-evaluates FactoryBot.define and raises
+# FactoryBot::DuplicateDefinitionError (registered sequences/factories).
 
 RSpec.configure do |config|
   # Fixtures are disabled: this app boots on a non-standard Ruby where the
@@ -76,17 +78,30 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
 
+  # Test federation node. CI/test loads schema only (never seeds), so the node
+  # university must exist for node-scoped PUBLIC browse endpoints to resolve.
+  # Set on config.x (read live by BaseController#node_university) and re-created
+  # after every truncate in the cleanup below.
+  TEST_NODE_UNIVERSITY_ID = "00000000-0000-0000-0000-00000000aa".freeze
+  UniFed::Application.config.x.node_university_id = TEST_NODE_UNIVERSITY_ID
+
   # Truncate all tables before every example so each example starts clean and
   # sequence-generated unique attributes (slug, code, matric_no, ...) never
-  # collide with leftover rows. Uses the single pinned test connection above.
+  # collide with leftover rows. A single multi-table TRUNCATE ... CASCADE
+  # (re)orders foreign keys for us, so it is both FK-safe and fast.
   config.before(:each) do
-    ActiveRecord::Base.connection.tables.each do |t|
-      klass = t.classify.safe_constantize
-      if klass && klass < ActiveRecord::Base
-        klass.delete_all
-      else
-        ActiveRecord::Base.connection.execute("DELETE FROM #{t}")
-      end
+    tables = ActiveRecord::Base.connection.tables - %w[schema_migrations ar_internal_metadata]
+    ActiveRecord::Base.connection.execute(
+      "TRUNCATE #{tables.map { |t| ActiveRecord::Base.connection.quote_table_name(t) }.join(", ")} RESTART IDENTITY CASCADE"
+    )
+
+    # Re-create the test node university (wiped by the truncate above) so
+    # node-scoped public browse endpoints have a university to scope to.
+    Academic::University.find_or_create_by(id: TEST_NODE_UNIVERSITY_ID) do |u|
+      u.slug = "test-node"
+      u.name = "Test Node University"
+      u.kind = "public"
+      u.country_iso = "ng"
     end
   end
 end
