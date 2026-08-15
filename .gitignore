@@ -55,3 +55,4 @@ _t.log
 _test_job.log
 frontend/test-results/
 frontend/playwright-report/
+!.env.example
