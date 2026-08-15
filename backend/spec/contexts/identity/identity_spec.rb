@@ -81,6 +81,29 @@ RSpec.describe Identity::TokenService, type: :service do
     refresh = Identity::TokenService.issue_refresh(user: user, session: session)
     expect(Identity::TokenService.verify(refresh, type: "access")).to be_nil
   end
+
+  # F-02: tokens MUST be bound to the configured audience.
+  it "embeds the configured audience in issued tokens" do
+    token = Identity::TokenService.issue_access(user: user, session: session, roles: ["student"])
+    decoded, = JWT.decode(token, Identity::TokenService.send(:secret), true, algorithm: Identity::TokenService::ALGO)
+    expect(decoded["aud"]).to eq(Identity::TokenService.audience)
+  end
+
+  it "rejects a token whose audience does not match (F-02)" do
+    token = Identity::TokenService.issue_access(user: user, session: session, roles: ["student"])
+    decoded, = JWT.decode(token, Identity::TokenService.send(:secret), true, algorithm: Identity::TokenService::ALGO)
+    wrong = JWT.encode(decoded.merge("aud" => "https://evil.example.com"),
+                       Identity::TokenService.send(:secret), Identity::TokenService::ALGO)
+    expect(Identity::TokenService.verify(wrong, type: "access")).to be_nil
+  end
+
+  it "rejects a token with no audience claim (F-02)" do
+    token = Identity::TokenService.issue_access(user: user, session: session, roles: ["student"])
+    decoded, = JWT.decode(token, Identity::TokenService.send(:secret), true, algorithm: Identity::TokenService::ALGO)
+    no_aud = JWT.encode(decoded.except("aud"),
+                        Identity::TokenService.send(:secret), Identity::TokenService::ALGO)
+    expect(Identity::TokenService.verify(no_aud, type: "access")).to be_nil
+  end
 end
 
 RSpec.describe Identity::PasswordAuthService, type: :service do

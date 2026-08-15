@@ -39,6 +39,10 @@ module UniFed
 
     # OIDC issuer for this node (per-deployment override via ENV).
     config.x.oidc_issuer = ENV.fetch("OIDC_ISSUER", "https://adun.unifed.ng")
+    # Audience the API tokens are bound to (F-02). Distinct from the issuer so
+    # a token minted for one purpose cannot be replayed elsewhere. Per-deployment
+    # override via ENV; defaults to "<issuer>/api".
+    config.x.oidc_audience = ENV.fetch("OIDC_AUDIENCE", "#{config.x.oidc_issuer}/api")
     config.x.node_slug   = ENV.fetch("NODE_SLUG", "adun")
     config.x.node_university_id = ENV.fetch("NODE_UNIVERSITY_ID", nil)
     config.x.federation_enabled = ENV.fetch("FEDERATION_ENABLED", "true") == "true"

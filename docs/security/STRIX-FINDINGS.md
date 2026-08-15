@@ -20,13 +20,13 @@
 - **Root cause:** Insecure default fallback for a security-critical secret.
 - **Remediation:** Fail closed — `secret` must raise if unset or equal to any known-bad value; Coolify MUST inject a ≥64-char random `OIDC_JWKS_PRIVATE`; rotate if ever used. (Hotfix applied this session — see commit.)
 
-### F-02 — Missing `aud` validation + HS256/RS256 inconsistency (HIGH)
+### F-02 — Missing `aud` validation + HS256/RS256 inconsistency (HIGH, **REMEDIATED IN CODE**)
 - **Severity:** HIGH
 - **Component:** `token_service.rb` (API) vs `oidc_issuer_service.rb` (OIDC)
-- **Description:** `TokenService.verify` validates `iss`/`typ`/`exp` but **not `aud`**. API uses HS256; OIDC issuer uses RS256 and advertises RS256 in discovery — the two token populations don't interoperate. Latent alg-confusion surface if the verifier is ever made alg-flexible.
-- **Impact:** (a) broken SSO between OIDC- and API-issued tokens; (b) missing `aud` enables token reuse across purposes; (c) future alg-confusion risk.
-- **Evidence:** `token_service.rb:7,42-50`; `oidc_issuer_service.rb`.
-- **Remediation:** Pin `alg` on verify; add `verify_aud` with a configured audience; unify token subsystem on RS256 verified against JWKS (or HS256 consistently).
+- **Description (pre-fix):** `TokenService.verify` validated `iss`/`typ`/`exp` but **not `aud`**. API uses HS256; OIDC issuer uses RS256 and advertises RS256 in discovery — the two token populations don't interoperate. Latent alg-confusion surface if the verifier is ever made alg-flexible.
+- **Fix (commit after `9a78e52`):** `TokenService` now sets `aud = config.x.oidc_audience` (default `<issuer>/api`, overridable via `OIDC_AUDIENCE`) on both access and refresh tokens, and `verify` enforces `verify_aud: true, aud: audience`, rescuing `JWT::InvalidAudienceError`. `config.x.oidc_audience` added in `config/application.rb`. Regression specs in `spec/contexts/identity/identity_spec.rb` assert a wrong-aud and a missing-aud token are both rejected while a correct-aud token round-trips. (`alg` remains pinned to HS256 on verify — no alg-confusion surface.)
+- **Impact (pre-fix):** (a) missing `aud` enabled token reuse across purposes; (b) future alg-confusion risk if verifier became alg-flexible.
+- **Status:** RESOLVED.
 
 ### F-03 — Rate limiter trusted attacker-controlled X-Forwarded-For (MEDIUM, DYNAMICALLY CONFIRMED, **REMEDIATED IN CODE**)
 - **Severity:** MEDIUM
@@ -109,11 +109,11 @@
 ---
 
 ## Severity distribution (this assessment)
-- CRITICAL: **1** (F-01, dynamically confirmed — **REMEDIATED**: fail-closed secret)
-- HIGH: **1** (F-02)
+- CRITICAL: **1** (F-01, dynamically confirmed — **REMEDIATED**: fail-closed secret + live rotation)
+- HIGH: **1** (F-02 — **REMEDIATED**: `aud` pinning on API tokens)
 - MEDIUM: **8** (F-03 ✅fixed, F-04, F-05, F-06, F-07, F-10 ✅fixed, F-11, F-12)
 - LOW: **2** (F-09 ✅fixed, F-13)
-- **Code-remediated this engagement:** F-01, F-03, F-09, F-10 (4 of 12). Remaining: F-02, F-04, F-05, F-06, F-07, F-11, F-12 (config/federation hardening) + F-13 (dev-dep hygiene).
+- **Code-remediated this engagement:** F-01, F-02, F-03, F-09, F-10 (5 of 12). Remaining: F-04, F-05, F-06 (federation hardening), F-07, F-11, F-12 (Docker/secret config) + F-13 (dev-dep hygiene).
 - INFORMATIONAL: 0 (prior I-01..I-05 folded into positives/notes)
 
 ## Overall verdict

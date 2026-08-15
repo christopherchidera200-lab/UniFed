@@ -17,6 +17,7 @@ module Identity
         actor_type: user.actor_type,
         jti: session.jti,
         typ: "access",
+        aud: audience,
         iat: now.to_i,
         exp: (now + ACCESS_TTL).to_i,
         iss: issuer
@@ -31,6 +32,7 @@ module Identity
         uni: user.university.slug,
         jti: session.refresh_jti,
         typ: "refresh",
+        aud: audience,
         iat: now.to_i,
         exp: (now + REFRESH_TTL).to_i,
         iss: issuer
@@ -38,19 +40,25 @@ module Identity
       JWT.encode(payload, secret, ALGO)
     end
 
-    # Returns the decoded payload or nil (invalid/expired/wrong iss/typ).
+    # Returns the decoded payload or nil (invalid/expired/wrong iss/typ/aud).
     def self.verify(token, type: "access")
       payload, = JWT.decode(token, secret, true, algorithm: ALGO,
                             verify_iss: true, iss: issuer,
+                            verify_aud: true, aud: audience,
                             verify_expiration: true)
       return nil unless payload["typ"] == type
       payload
-    rescue JWT::DecodeError, JWT::ExpiredSignature, JWT::InvalidIssuerError
+    rescue JWT::DecodeError, JWT::ExpiredSignature, JWT::InvalidIssuerError, JWT::InvalidAudienceError
       nil
     end
 
     def self.issuer
       UniFed::Application.config.x.oidc_issuer
+    end
+
+    # F-02: the audience API tokens are bound to (distinct from the issuer).
+    def self.audience
+      UniFed::Application.config.x.oidc_audience
     end
 
     # Fail closed: never fall back to an insecure, guessable, or empty secret.

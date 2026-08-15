@@ -35,17 +35,18 @@ Same pattern as F-01. In `config/environments/production.rb` (or an initializer)
 
 ---
 
-## P1 — JWT `aud` + alg pinning (F-02)
+## P1 — JWT `aud` + alg pinning (F-02)  [DONE — committed after 9a78e52]
 
-In `TokenService.verify`:
+`TokenService` now sets `aud = config.x.oidc_audience` (default `<issuer>/api`, overridable via `OIDC_AUDIENCE`) on both access and refresh tokens, and `verify` enforces `verify_aud: true, aud: audience`, rescuing `JWT::InvalidAudienceError`:
 ```ruby
+# app/contexts/identity/app/services/identity/token_service.rb
 JWT.decode(token, secret, true,
-  algorithm: ALGO,            # pin alg
+  algorithm: ALGO,            # pin alg (HS256)
   verify_iss: true, iss: issuer,
-  verify_aud: true, aud: UniFed::Application.config.x.oidc_audience,
+  verify_aud: true, aud: audience,
   verify_expiration: true)
 ```
-Set `config.x.oidc_audience` (e.g. `https://api.unifed.ng`). Unify the OIDC issuer on RS256/JWKS so API- and OIDC-issued tokens interoperate; never make `alg` caller-controlled.
+`config.x.oidc_audience` added in `config/application.rb`. Regression specs in `spec/contexts/identity/identity_spec.rb` assert a wrong-aud and a missing-aud token are both rejected while a correct-aud token round-trips. (`alg` was already pinned to HS256 on verify — no alg-confusion surface.) Backend RSpec green (151/0 incl. 3 new F-02 specs).
 
 ---
 
