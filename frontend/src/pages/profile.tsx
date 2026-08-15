@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { User, Mail, GraduationCap, LogOut, AlertTriangle, ShieldCheck } from "lucide-react";
+import { User, Mail, GraduationCap, LogOut, AlertTriangle, ShieldCheck, ChevronRight, BookOpen } from "lucide-react";
 import { unifedApi, getToken, type ProfileDTO } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
@@ -79,9 +79,12 @@ export default function ProfilePage() {
             )}
 
             <div className="space-y-3">
-              <Card className="flex items-center gap-3">
+              <Link
+                href="/academic/records"
+                className="card card-hover flex items-center gap-3 p-4"
+              >
                 <IconBadge className="bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
-                  <GraduationCap size={18} />
+                  <BookOpen size={18} />
                 </IconBadge>
                 <div className="flex-1">
                   <div className="font-medium text-ink">Account</div>
@@ -89,16 +92,26 @@ export default function ProfilePage() {
                     {email ? "Connected via your university account" : "No email on file"}
                   </div>
                 </div>
-              </Card>
-              <Card className="flex items-center gap-3">
+                <ChevronRight size={18} className="text-ink-subtle" />
+              </Link>
+
+              <Link
+                href="/discover"
+                className="card card-hover flex items-center gap-3 p-4"
+              >
                 <IconBadge className="bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
-                  <Mail size={18} />
+                  <GraduationCap size={18} />
                 </IconBadge>
                 <div className="flex-1">
                   <div className="font-medium text-ink">University</div>
-                  <div className="text-ink-subtle text-xs">adun · ADUN</div>
+                  <div className="text-ink-subtle text-xs">
+                    {profile.data.university
+                      ? `${profile.data.university.name}${profile.data.university.short_name ? ` · ${profile.data.university.short_name}` : ""}`
+                      : "adun · ADUN"}
+                  </div>
                 </div>
-              </Card>
+                <ChevronRight size={18} className="text-ink-subtle" />
+              </Link>
             </div>
 
             {profile.data.actor_type === "admin" && (

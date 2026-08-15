@@ -45,6 +45,16 @@ RSpec.describe Profile::ProfileService, type: :service do
       expect(view[:social_links]).to eq({})
     end
 
+    it "includes the user's university (id/name/short_name/slug)" do
+      view = described_class.for_user(user)
+      expect(view[:university]).to include(
+        id: university.id,
+        name: university.name,
+        short_name: university.short_name,
+        slug: university.slug
+      )
+    end
+
     it "initializes an empty profile when none exists" do
       view = described_class.for_user(user)
       expect(view[:skills]).to eq([])

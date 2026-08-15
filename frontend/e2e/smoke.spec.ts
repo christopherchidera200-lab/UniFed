@@ -19,7 +19,8 @@ test.beforeEach(async ({ page }) => {
       contentType: "application/json",
       body: JSON.stringify({
         id: "u1", display_name: "Christopher", email: "student@adun.edu.ng",
-        actor_type: "student", bio: null, skills: [], portfolio: [], social_links: {}, creator: false
+        actor_type: "student", bio: null, skills: [], portfolio: [], social_links: {}, creator: false,
+        university: { id: "u1", name: "Admiralty University of Nigeria", short_name: "ADUN", slug: "adun" }
       })
     })
   );
@@ -229,6 +230,21 @@ test("administration page renders stats and users", async ({ page }) => {
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
   await expect(page.getByText("Christopher")).toBeVisible();
+});
+
+test("profile page shows the real university and links out", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('input[type="email"]', "student@adun.edu.ng");
+  await page.fill('input[type="password"]', "Passw0rd!");
+  await page.click('button[type="submit"]');
+  await page.goto("/profile");
+  // University card renders the real university from /api/v1/profile (not a hardcoded literal).
+  const universityCard = page.getByRole("link", { name: /University/ });
+  await expect(universityCard).toBeVisible();
+  await expect(universityCard).toContainText("ADUN");
+  await expect(universityCard).toHaveAttribute("href", "/discover");
+  await universityCard.click();
+  await expect(page).toHaveURL(/\/discover/);
 });
 
 test("academic records uses the authenticated student identity", async ({ page }) => {

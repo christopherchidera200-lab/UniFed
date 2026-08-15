@@ -94,6 +94,12 @@ export interface ProfileDTO {
   portfolio: string[];
   social_links: Record<string, string>;
   creator: boolean;
+  university?: {
+    id: string;
+    name: string;
+    short_name: string | null;
+    slug: string | null;
+  } | null;
 }
 
 async function authedFetch<T>(path: string, token: string): Promise<T> {
