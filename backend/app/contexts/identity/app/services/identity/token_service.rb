@@ -53,8 +53,23 @@ module Identity
       UniFed::Application.config.x.oidc_issuer
     end
 
+    # Fail closed: never fall back to an insecure, guessable, or empty secret.
+    # A forgeable default previously allowed anyone who knew the value to mint
+    # valid admin tokens (auth bypass / privilege escalation). The deployment
+    # MUST inject a strong, random OIDC_JWKS_PRIVATE; we refuse to boot insecurely.
+    KNOWN_BAD_SECRETS = %w[
+      dev-insecure-change-me
+      ci-insecure-not-for-prod
+      change-me-in-prod
+    ].freeze
+
     def self.secret
-      ENV.fetch("OIDC_JWKS_PRIVATE", "dev-insecure-change-me")
+      secret = ENV["OIDC_JWKS_PRIVATE"].to_s
+      if secret.empty? || KNOWN_BAD_SECRETS.include?(secret)
+        raise "OIDC_JWKS_PRIVATE is not configured with a strong secret " \
+              "(refusing to issue/verify tokens insecurely)"
+      end
+      secret
     end
   end
 end
