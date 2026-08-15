@@ -6,6 +6,14 @@ module Api
       before_action :authenticate!
       before_action :load_student, only: %i[show records summary transcript]
 
+      # GET /api/v1/academic/me  -> the current user's own student identity
+      # (resolved via the OIDC subject -> Academic::Student.identity_subject).
+      def me
+        student = Academic::Student.find_by(identity_subject: current_user.id)
+        return render json: { error: "no_student" }, status: :not_found unless student
+        render json: student_json(student)
+      end
+
       # GET /api/v1/academic/students/:id
       def show
         authorize_student!(@student)

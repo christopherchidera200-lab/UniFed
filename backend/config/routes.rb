@@ -40,6 +40,10 @@ Rails.application.routes.draw do
 
       # Academic Records (existing slice)
       resources :academic, only: [] do
+        collection do
+          # Current user's own academic identity (resolved from the OIDC subject).
+          get "me", to: "academic_records#me", as: :academic_me
+        end
         member do
           get "students/:id", to: "academic_records#show", as: :student
           get "students/:id/records", to: "academic_records#records", as: :student_records

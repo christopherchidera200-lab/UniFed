@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Briefcase, Library, CalendarDays, Sparkles } from "lucide-react";
-import { unifedApi, getToken, type EventDTO } from "@/lib/api";
+import { unifedApi, getToken, type EventDTO, type ProfileDTO } from "@/lib/api";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Card, SectionHeader, IconBadge } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
@@ -11,6 +11,11 @@ import { cn } from "@/lib/cn";
 export default function HomePage() {
   const token = getToken();
 
+  const profile = useQuery<ProfileDTO>({
+    queryKey: ["profile"],
+    queryFn: () => unifedApi.profile(token),
+    enabled: Boolean(token)
+  });
   const courses = useQuery({
     queryKey: ["home-courses"],
     queryFn: () => unifedApi.catalogCourses(),
@@ -21,6 +26,8 @@ export default function HomePage() {
     queryFn: () => unifedApi.events(),
     enabled: Boolean(token)
   });
+
+  const displayName = profile.data?.display_name || "there";
 
   const stats = [
     { label: "Courses", value: courses.data?.length ?? "—" },
@@ -42,7 +49,7 @@ export default function HomePage() {
           <div>
             <p className="text-ink-muted text-sm">Welcome back,</p>
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
-              ADUN Student
+              {displayName}
             </h1>
           </div>
           <IconBadge className="bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">

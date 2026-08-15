@@ -147,10 +147,32 @@ export const unifedApi = {
     return data as { access_token: string; refresh_token: string; expires_in?: number };
   },
 
-  records: (studentId: string, token: string) =>
-    authedFetch<GradeRecordDTO[]>(`/api/v1/academic/students/${studentId}/records`, token),
-  summary: (studentId: string, token: string) =>
-    authedFetch<SummaryDTO>(`/api/v1/academic/students/${studentId}/summary`, token),
+  // --- Current user's own academic identity (resolved server-side) ---
+  myStudent: (token: string) =>
+    authedFetch<{ id: string; university_id: string; matric_no: string }>(
+      `/api/v1/academic/me`,
+      token
+    ),
+
+  // Academic records are scoped to BOTH the university and the student.
+  records: (universityId: string, studentId: string, token: string) =>
+    authedFetch<GradeRecordDTO[]>(
+      `/api/v1/academic/${universityId}/students/${studentId}/records`,
+      token
+    ),
+  summary: (universityId: string, studentId: string, token: string) =>
+    authedFetch<SummaryDTO>(
+      `/api/v1/academic/${universityId}/students/${studentId}/summary`,
+      token
+    ),
+
+  // Feed / social posting (authenticated; author resolved server-side).
+  createPost: (token: string, body: string) =>
+    authedPost<{ id: string; body: string; visibility: string }>(
+      `/api/v1/feed/posts`,
+      token,
+      { body }
+    ),
 
   // Phase 2 — Catalog (PUBLIC browse)
   catalogCourses: (params: Record<string, string | number> = {}) => {

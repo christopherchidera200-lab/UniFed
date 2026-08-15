@@ -33,13 +33,22 @@ test.beforeEach(async ({ page }) => {
       { id: "n1", category: "academic", title: "New grade posted: CSC301", body: "You scored 82 in Algorithms.", created_at: "2026-08-08T12:00:00Z" },
       { id: "n2", category: "finance", title: "Fee reminder", body: "Session fees due Sept 1.", created_at: "2026-08-07T09:00:00Z" }
     ]) }));
-  await page.route("**/api/v1/academic/students/*/records*", (r) =>
+  await page.route("**/api/v1/profile", (r) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      id: "u1", display_name: "Christopher", email: "student@adun.edu.ng",
+      actor_type: "student", bio: null, skills: [], portfolio: [], social_links: {}, creator: false
+    }) }));
+  await page.route("**/api/v1/academic/me", (r) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      id: "s1", university_id: "u1", matric_no: "ADUN/ENG/CSC/21/001"
+    }) }));
+  await page.route("**/api/v1/academic/*/students/*/records*", (r) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([
       { id: "g1", course_code: "CSC301", course_title: "Algorithms", score: 82, grade_letter: "A", credit_units: 3, is_published: true }
     ]) }));
-  await page.route("**/api/v1/academic/students/*/summary*", (r) =>
+  await page.route("**/api/v1/academic/*/students/*/summary*", (r) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
-      student_id: "s1", cgpa: 4.2, total_credit_units: 21, level: 300, matric_no: "2021/12345", published_grades: 7
+      student_id: "s1", cgpa: 4.2, total_credit_units: 21, level: 300, matric_no: "ADUN/ENG/CSC/21/001", published_grades: 7
     }) }));
 });
 
