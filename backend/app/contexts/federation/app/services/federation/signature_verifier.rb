@@ -10,26 +10,48 @@ module Federation
   class SignatureVerifier
     CACHE_TTL = 1.hour
 
+    # The signature MUST cover these headers; covering only (request-target)
+    # (the vuln-0003 gap) is insufficient because it omits host/date, letting
+    # an attacker replay or re-target a captured signature.
+    REQUIRED_HEADERS = %w[host date].freeze
+
     def self.verify(request:, actor_uri:)
       sig_header = request.headers["Signature"].to_s
       return false if sig_header.blank?
 
       params = parse_sig_header(sig_header)
       return false unless params["keyId"] && params["signature"]
+      return false unless params["headers"]
+
+      signed = params["headers"].to_s.split(/\s+/)
+      return false unless (REQUIRED_HEADERS - signed).empty?
 
       # The actor that signed must be the actor named in the activity.
       key_actor_uri = params["keyId"].gsub(/#main-key\z/, "")
       return false if actor_uri.present? && key_actor_uri != actor_uri.gsub(/#main-key\z/, "")
 
+      # Reject stale / forged dates outside the allowed skew (vuln-0003).
+      return false unless date_within_skew?(request.headers["date"].to_s)
+
       pub = public_key_for(key_actor_uri)
       return false unless pub
 
-      signed_string = build_signed_string(request, params["headers"])
+      signed_string = build_signed_string(request, signed)
       begin
         pub.verify(OpenSSL::Digest::SHA256.new, Base64.strict_decode64(params["signature"]), signed_string)
       rescue OpenSSL::PKey::RSAError, ArgumentError
         false
       end
+    end
+
+    # Accepts an HTTP-date only within ±5 minutes of now (vuln-0003). A missing
+    # or malformed date is rejected.
+    def self.date_within_skew?(date_header)
+      return false if date_header.blank?
+      time = Time.httpdate(date_header)
+      (time - Time.current).abs <= 5.minutes
+    rescue ArgumentError
+      false
     end
 
     def self.public_key_for(actor_uri)
@@ -50,6 +72,8 @@ module Federation
     def self.fetch_remote_public_key(actor_uri)
       uri = URI.parse(actor_uri)
       return nil unless uri.is_a?(URI::HTTP) && uri.scheme == "https"
+      return nil if Federation::SsrfGuard.blocked_host?(uri.host)
+
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.open_timeout = 5
