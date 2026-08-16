@@ -9,6 +9,11 @@ module Federation
   #    impersonating another actor.
   class SignatureVerifier
     CACHE_TTL = 1.hour
+    # Minimum set of headers a signature MUST cover. Without `host` the signature
+    # does not bind to a specific server; without `date` it has no time window
+    # and can be replayed indefinitely (vuln-0003).
+    REQUIRED_HEADERS = %w[(request-target) host date].freeze
+    MAX_CLOCK_SKEW = 300 # seconds (±5 minutes)
 
     def self.verify(request:, actor_uri:)
       sig_header = request.headers["Signature"].to_s
@@ -16,6 +21,16 @@ module Federation
 
       params = parse_sig_header(sig_header)
       return false unless params["keyId"] && params["signature"]
+
+      # Reject if the signer omitted the headers list or dropped any required
+      # header from it — a stripped header set must never verify (vuln-0003).
+      signed_headers = params["headers"].to_s.split(/\s+/)
+      return false if signed_headers.empty?
+      return false unless (REQUIRED_HEADERS - signed_headers).empty?
+
+      # Reject stale or future-dated requests to close the replay window even
+      # for correctly-signed requests.
+      return false unless date_within_skew?(request.headers["date"].to_s)
 
       # The actor that signed must be the actor named in the activity.
       key_actor_uri = params["keyId"].gsub(/#main-key\z/, "")
@@ -50,6 +65,8 @@ module Federation
     def self.fetch_remote_public_key(actor_uri)
       uri = URI.parse(actor_uri)
       return nil unless uri.is_a?(URI::HTTP) && uri.scheme == "https"
+      return nil if SsrfGuard.blocked_host?(uri.host)
+
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.open_timeout = 5
@@ -60,6 +77,15 @@ module Federation
       doc.dig("publicKey", "publicKeyPem")
     rescue StandardError
       nil
+    end
+
+    def self.date_within_skew?(date_header)
+      return false if date_header.blank?
+      parsed = Time.httpdate(date_header)
+      return false unless parsed
+      (parsed - Time.current).abs <= MAX_CLOCK_SKEW
+    rescue ArgumentError
+      false
     end
 
     def self.parse_sig_header(header)
