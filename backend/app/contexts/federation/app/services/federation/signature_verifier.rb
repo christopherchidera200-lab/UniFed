@@ -36,7 +36,7 @@ module Federation
       pub = public_key_for(key_actor_uri)
       return false unless pub
 
-      signed_string = build_signed_string(request, signed)
+      signed_string = build_signed_string(request, params["headers"])
       begin
         pub.verify(OpenSSL::Digest::SHA256.new, Base64.strict_decode64(params["signature"]), signed_string)
       rescue OpenSSL::PKey::RSAError, ArgumentError
