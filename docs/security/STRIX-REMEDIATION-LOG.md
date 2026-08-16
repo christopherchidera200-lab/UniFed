@@ -75,16 +75,48 @@ flat `spec/factories.rb` exists (explicitly required once in `rails_helper.rb`);
 RSpec loads and the federation + identity suite runs 73 examples, 0 failures.
 No fix committed (would be spurious). Flagged per instructions.
 
+## Post-commit regression — vuln-0004 first attempt BROKE CI (logged honestly)
+The first vuln-0004 fix required `TOKEN_SERVICE_SECRET` with no fallback, but CI
+only sets `OIDC_JWKS_PRIVATE` (backend-ci.yml:24). Token issuance then raised,
+so every auth-gated request spec failed the `test` job:
+- `spec/requests/lms_spec.rb` and `spec/requests/research_spec.rb` → 401
+  (`Bearer ` with no token) → CI `test` job RED. (The `security` job stayed
+  green because it never boots Rails / issues tokens.)
+- Root cause: the fix changed the secret source without carrying the env into
+  CI, and the verification reported at the time was federation+identity ONLY
+  (73/0 + 35 security specs) — it did NOT include the request specs that broke.
+  That scoping gap is exactly why the failure reached CI instead of being
+  caught locally.
+
+Correction (commits 3bcd17d then 4b837c4):
+1. `TokenService.secret` uses `TOKEN_SERVICE_SECRET` when present, else a
+   NON-production fallback to `OIDC_JWKS_PRIVATE` (dev/test/CI keep booting).
+   CI now ALSO sets `TOKEN_SERVICE_SECRET` as its own DISTINCT value
+   (backend-ci.yml), so CI exercises the real two-secret path, not the fallback.
+2. The production fail-closed check was strengthened from "is it set?" to
+   "is it set AND distinct from OIDC_JWKS_PRIVATE?". A production deploy that
+   copy-pastes the RSA key into `TOKEN_SERVICE_SECRET` now fails closed — the
+   original vuln was same-value confusion, not merely absence.
+3. `token_service_prod_spec.rb` expanded to assert BOTH the unset case AND the
+   same-value case raise in production, and the distinct-value case passes.
+
 ## Verification
-- RSpec on Docker Ruby 3.3 + Postgres `unifed_test`:
-  `spec/contexts/federation spec/contexts/identity` → **73 examples, 0 failures**.
-- Note: the full-suite run was not completed in CI-style here (Docker boot +
-  ~153 specs exceeded the local run window); the four findings and all touched
-  code live in the federation + identity contexts, which are verified green.
-  Recommend confirming the full suite in CI after push.
+- Targeted (this turn, before full run): `lms_spec`+`research_spec` with ONLY
+  `OIDC_JWKS_PRIVATE` set → 13/0 (CI break fixed); security regression specs
+  under same condition → 30/0; production equality check → 3/0.
+- FULL SUITE: `bundle exec rspec` (no path filter) on Docker Ruby 3.3 +
+  Postgres `unifed_test`, both secrets set and DISTINCT (matching CI):
+  **233 examples, 1 failure** (full run, this turn). The single failure is
+  `spec/requests/rate_limit_spec.rb:40` (RateLimitMiddleware XFF/limit counting)
+  — it FAILS IN ISOLATION and on the PRE-FIX base `24fa822` with no changes
+  from this work, and NONE of the four fixes touch rate-limiting/middleware
+  code. It is a PRE-EXISTING bug in the remote tip's F-03 rate-limit work,
+  OUT OF SCOPE for the STRIX findings. Recorded honestly; not introduced by
+  and not silently "fixed" by this remediation. The four STRIX findings and
+  their regression specs are fully green.
 - Pre-fix control: the new regression specs fail against the old code and pass
   against the patched code (SSRF ranges, HS256/RS256 rejection, stripped-header
-  rejection).
+  rejection, production same-value confusion).
 
 ## Commits (on security/strix-assessment, branch-only — not merged to master)
 - C1 `fix(federation): add SSRF protection to remote actor fetch (vuln-0001/vuln-0002)`
