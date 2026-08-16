@@ -8,10 +8,17 @@ module Identity
     ACCESS_TTL  = 15.minutes
     REFRESH_TTL = 30.days
 
+    # Known-weak secrets that must never be used to sign/verify tokens.
+    KNOWN_BAD_SECRETS = %w[
+      dev-insecure-change-me
+      ci-insecure-not-for-prod
+      change-me-in-prod
+    ].freeze
+
     def self.issue_access(user:, session:, roles:)
       now = Time.current
       payload = {
-        sub: user.id,
+        sub: user.id.to_s,
         uni: user.university.slug,
         roles: roles,
         actor_type: user.actor_type,
@@ -28,7 +35,7 @@ module Identity
     def self.issue_refresh(user:, session:)
       now = Time.current
       payload = {
-        sub: user.id,
+        sub: user.id.to_s,
         uni: user.university.slug,
         jti: session.refresh_jti,
         typ: "refresh",
@@ -61,20 +68,31 @@ module Identity
       UniFed::Application.config.x.oidc_audience
     end
 
-    # Fail closed: never fall back to an insecure, guessable, or empty secret.
-    # A forgeable default previously allowed anyone who knew the value to mint
-    # valid admin tokens (auth bypass / privilege escalation). The deployment
-    # MUST inject a strong, random OIDC_JWKS_PRIVATE; we refuse to boot insecurely.
-    KNOWN_BAD_SECRETS = %w[
-      dev-insecure-change-me
-      ci-insecure-not-for-prod
-      change-me-in-prod
-    ].freeze
+    # Production is determined by the boot env (RAILS_ENV/RACK_ENV), not the
+    # memoized Rails.env, so the check is deterministic and testable.
+    def self.production?
+      (ENV["RAILS_ENV"].presence || ENV["RACK_ENV"].presence) == "production"
+    end
 
     def self.secret
-      secret = ENV["OIDC_JWKS_PRIVATE"].to_s
-      if secret.empty? || KNOWN_BAD_SECRETS.include?(secret)
-        raise "OIDC_JWKS_PRIVATE is not configured with a strong secret " \
+      if production?
+        secret = ENV["TOKEN_SERVICE_SECRET"].to_s
+        rsa_key = ENV["OIDC_JWKS_PRIVATE"].to_s
+        if secret.blank? || secret == rsa_key || KNOWN_BAD_SECRETS.include?(secret)
+          raise "TOKEN_SERVICE_SECRET must be set in production, distinct from " \
+                "OIDC_JWKS_PRIVATE, and not a known-bad value (JWT algorithm-" \
+                "confusion risk, vuln-0004)"
+        end
+        return secret
+      end
+
+      # Non-production (dev/test/CI): use the dedicated secret when present;
+      # otherwise fall back to the RSA key for local convenience. CI sets
+      # TOKEN_SERVICE_SECRET explicitly, so CI exercises the real two-secret
+      # path rather than this fallback.
+      secret = ENV["TOKEN_SERVICE_SECRET"].presence || ENV["OIDC_JWKS_PRIVATE"].to_s
+      if secret.blank? || KNOWN_BAD_SECRETS.include?(secret)
+        raise "TOKEN_SERVICE_SECRET is not configured with a strong secret " \
               "(refusing to issue/verify tokens insecurely)"
       end
       secret

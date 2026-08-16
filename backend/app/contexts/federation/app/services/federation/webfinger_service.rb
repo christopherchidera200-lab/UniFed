@@ -1,3 +1,5 @@
+require "net/http"
+
 module Federation
   # Resolves a remote actor from a handle (user@host) or actor URI via
   # WebFinger + the actor document. Caches the public key on a remote Actor row.
@@ -38,10 +40,20 @@ module Federation
     end
 
     def self.fetch_actor_document(uri)
-      # In production this hits the remote /.well-known/webfinger then the actor
-      # document. Kept as a clearly-marked network boundary (no real HTTP here
-      # to keep the suite hermetic and fast).
-      Rails.logger.info("webfinger.fetch_actor_document(#{uri}) [network boundary]")
+      return nil unless uri.to_s.start_with?("https://")
+      host = URI.parse(uri).host
+      return nil if Federation::SsrfGuard.blocked_host?(host)
+
+      http = Net::HTTP.new(host, 443)
+      http.use_ssl = true
+      http.open_timeout = 5
+      http.read_timeout = 5
+      resp = http.get(URI.parse(uri).request_uri,
+                      { "Accept" => "application/activity+json" })
+      return nil unless resp.code == "200"
+
+      JSON.parse(resp.body)
+    rescue StandardError
       nil
     end
   end
