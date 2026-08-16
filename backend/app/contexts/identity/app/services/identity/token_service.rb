@@ -61,14 +61,13 @@ module Identity
       UniFed::Application.config.x.oidc_audience
     end
 
-    # Fail closed in PRODUCTION: tokens must be signed with a dedicated
-    # TOKEN_SERVICE_SECRET that is DISTINCT from the RSA signing key
-    # (OIDC_JWKS_PRIVATE). Reusing the RSA key would let the published RS256
-    # public key double as the HMAC secret (JWT algorithm-confusion, vuln-0004).
-    #
-    # In non-production environments (dev/test/CI) we fall back to
-    # OIDC_JWKS_PRIVATE so the suite and local dev keep working without a
-    # second secret wired up — but production MUST set TOKEN_SERVICE_SECRET.
+    # In PRODUCTION the HS256 token secret MUST be a dedicated value that is
+    # DISTINCT from the RS256 signing key (OIDC_JWKS_PRIVATE). The vuln-0004
+    # risk was never merely "no dedicated secret exists" — it was "the HMAC
+    # secret and the RSA private key are the SAME value", which lets the
+    # published RS256 public key double as the HMAC secret. So we fail closed
+    # if TOKEN_SERVICE_SECRET is unset OR equal to OIDC_JWKS_PRIVATE (or a
+    # known-bad value).
     KNOWN_BAD_SECRETS = %w[
       dev-insecure-change-me
       ci-insecure-not-for-prod
@@ -76,21 +75,27 @@ module Identity
     ].freeze
 
     def self.secret
-      secret = ENV["TOKEN_SERVICE_SECRET"].presence || fallback_secret
+      if Rails.env.production?
+        secret = ENV["TOKEN_SERVICE_SECRET"].to_s
+        rsa_key = ENV["OIDC_JWKS_PRIVATE"].to_s
+        if secret.blank? || secret == rsa_key || KNOWN_BAD_SECRETS.include?(secret)
+          raise "TOKEN_SERVICE_SECRET must be set in production, distinct from " \
+                "OIDC_JWKS_PRIVATE, and not a known-bad value (JWT algorithm-" \
+                "confusion risk, vuln-0004)"
+        end
+        return secret
+      end
+
+      # Non-production (dev/test/CI): use the dedicated secret when present;
+      # otherwise fall back to the RSA key for local convenience. CI sets
+      # TOKEN_SERVICE_SECRET explicitly, so CI exercises the real two-secret
+      # path rather than this fallback.
+      secret = ENV["TOKEN_SERVICE_SECRET"].presence || ENV["OIDC_JWKS_PRIVATE"].to_s
       if secret.blank? || KNOWN_BAD_SECRETS.include?(secret)
         raise "TOKEN_SERVICE_SECRET is not configured with a strong secret " \
               "(refusing to issue/verify tokens insecurely)"
       end
       secret
-    end
-
-    def self.fallback_secret
-      # Dev/test only: tolerate the shared OIDC key so existing env templates and
-      # CI keep booting. Production must supply TOKEN_SERVICE_SECRET instead.
-      return ENV["OIDC_JWKS_PRIVATE"].to_s unless Rails.env.production?
-      # In production without TOKEN_SERVICE_SECRET we refuse to fall back to the
-      # RSA key — the caller must configure a dedicated secret.
-      raise "TOKEN_SERVICE_SECRET must be set in production (distinct from OIDC_JWKS_PRIVATE)"
     end
   end
 end
