@@ -100,23 +100,53 @@ Correction (commits 3bcd17d then 4b837c4):
 3. `token_service_prod_spec.rb` expanded to assert BOTH the unset case AND the
    same-value case raise in production, and the distinct-value case passes.
 
-## Verification
-- Targeted (this turn, before full run): `lms_spec`+`research_spec` with ONLY
-  `OIDC_JWKS_PRIVATE` set → 13/0 (CI break fixed); security regression specs
-  under same condition → 30/0; production equality check → 3/0.
-- FULL SUITE: `bundle exec rspec` (no path filter) on Docker Ruby 3.3 +
-  Postgres `unifed_test`, both secrets set and DISTINCT (matching CI):
-  **233 examples, 1 failure** (full run, this turn). The single failure is
-  `spec/requests/rate_limit_spec.rb:40` (RateLimitMiddleware XFF/limit counting)
-  — it FAILS IN ISOLATION and on the PRE-FIX base `24fa822` with no changes
-  from this work, and NONE of the four fixes touch rate-limiting/middleware
-  code. It is a PRE-EXISTING bug in the remote tip's F-03 rate-limit work,
-  OUT OF SCOPE for the STRIX findings. Recorded honestly; not introduced by
-  and not silently "fixed" by this remediation. The four STRIX findings and
-  their regression specs are fully green.
-- Pre-fix control: the new regression specs fail against the old code and pass
-  against the patched code (SSRF ranges, HS256/RS256 rejection, stripped-header
-  rejection, production same-value confusion).
+## Second regression — working tree was reverted, source fixes were lost (logged honestly)
+A diagnostic `git checkout 24fa822 -- backend/...` (run to compare the pre-fix
+base) mutated the working tree back to the VULNERABLE source, and that reverted
+source was subsequently committed. Result: the four source-file fixes
+(token_service.rb, federation.rb, signature_verifier.rb, webfinger_service.rb)
+were byte-identical to the pre-fix base `24fa822`, while the *specs* (which
+expect the patched behaviour) remained. The branch was internally inconsistent.
+
+Evidence: CI `test` job RED with
+`NameError: uninitialized constant Federation::SsrfGuard` at
+`ssrf_guard_spec.rb:3` — the `require_relative ".../ssrf_guard"` line had been
+lost from `federation.rb`, and `git diff 24fa822 HEAD --stat` showed none of
+the four source files changed (only new `*_spec.rb`, env, CI yml, docs).
+
+Correction (commits e4a51a3 then e28c471):
+1. Re-applied ALL four source fixes to match the surviving specs:
+   - `federation.rb`: restored `require_relative ".../ssrf_guard"` (fixes the
+     CI NameError).
+   - `webfinger_service.rb`: real guarded https fetch (vuln-0002).
+   - `signature_verifier.rb`: guarded `fetch_remote_public_key` (vuln-0001) +
+     REQUIRED_HEADERS (host/date) + ±5m date skew (vuln-0003).
+   - `token_service.rb`: dedicated `TOKEN_SERVICE_SECRET`; production fails
+     closed when unset OR equal to `OIDC_JWKS_PRIVATE` (same-value confusion,
+     vuln-0004); `production?` derived from `RAILS_ENV`/`RACK_ENV` (deterministic
+     — the earlier `Rails.env` stub did not propagate into the method).
+2. Bug caught by the FULL suite: vuln-0003 passed the parsed header ARRAY to
+   `build_signed_string`, whose `headers.to_s.split` on an Array yields
+   `"#<Array:...>"` (not a joined string) → every signature verify returned
+   false. Fixed by passing the original `params["headers"]` string. (Confirmed
+   by the full run dropping from 4 failures back to 1.)
+
+Lesson reinforced: never `git checkout <base> -- <paths>` into a live working
+tree during an active remediation; use a throwaway worktree/container instead.
+And the FULL suite (not targeted subsets) is the only honest "done" signal.
+
+## Verification (final, this turn)
+- FULL SUITE: `bundle exec rspec` (no path filter) on Docker Ruby 3.3 + Postgres
+  `unifed_test`, both secrets DISTINCT (matching CI): **233 examples, 1 failure**.
+- The one failure is `spec/requests/rate_limit_spec.rb:40` (RateLimitMiddleware
+  XFF/limit counting) — PRE-EXISTING (fails in isolation and on base `24fa822`,
+  no STRIX code touches rate-limiting), OUT OF SCOPE. Every STRIX finding and its
+  regression spec is green.
+- Ad-hoc targeted re-checks this turn: `ssrf_guard_spec` (4/0),
+  `webfinger_ssrf_spec` (6/0), `signature_verifier_spec` (6/0),
+  `token_service_algo_spec` (4/0), `token_service_prod_spec` (3/0, including the
+  same-value-confusion case), `lms_spec`+`research_spec` (13/0 with only
+  `OIDC_JWKS_PRIVATE` set).
 
 ## Commits (on security/strix-assessment, branch-only — not merged to master)
 - C1 `fix(federation): add SSRF protection to remote actor fetch (vuln-0001/vuln-0002)`
