@@ -11,7 +11,7 @@ module Identity
     def self.issue_access(user:, session:, roles:)
       now = Time.current
       payload = {
-        sub: user.id,
+        sub: user.id.to_s,
         uni: user.university.slug,
         roles: roles,
         actor_type: user.actor_type,
@@ -28,7 +28,7 @@ module Identity
     def self.issue_refresh(user:, session:)
       now = Time.current
       payload = {
-        sub: user.id,
+        sub: user.id.to_s,
         uni: user.university.slug,
         jti: session.refresh_jti,
         typ: "refresh",
@@ -61,10 +61,11 @@ module Identity
       UniFed::Application.config.x.oidc_audience
     end
 
-    # Fail closed: never fall back to an insecure, guessable, or empty secret.
-    # A forgeable default previously allowed anyone who knew the value to mint
-    # valid admin tokens (auth bypass / privilege escalation). The deployment
-    # MUST inject a strong, random OIDC_JWKS_PRIVATE; we refuse to boot insecurely.
+    # Fail closed: never fall back to an insecure, guessable, or empty secret,
+    # and NEVER reuse the RSA signing key (OIDC_JWKS_PRIVATE) here. Tokens are
+    # signed with HS256 using this dedicated secret; OIDC id_tokens use RS256
+    # from OIDC_JWKS_PRIVATE. Sharing the two would let the published RS256
+    # public key double as the HMAC secret (JWT algorithm-confusion, vuln-0004).
     KNOWN_BAD_SECRETS = %w[
       dev-insecure-change-me
       ci-insecure-not-for-prod
@@ -72,9 +73,9 @@ module Identity
     ].freeze
 
     def self.secret
-      secret = ENV["OIDC_JWKS_PRIVATE"].to_s
+      secret = ENV["TOKEN_SERVICE_SECRET"].to_s
       if secret.empty? || KNOWN_BAD_SECRETS.include?(secret)
-        raise "OIDC_JWKS_PRIVATE is not configured with a strong secret " \
+        raise "TOKEN_SERVICE_SECRET is not configured with a strong secret " \
               "(refusing to issue/verify tokens insecurely)"
       end
       secret
