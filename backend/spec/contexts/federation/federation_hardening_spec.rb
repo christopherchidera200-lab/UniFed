@@ -16,7 +16,7 @@ RSpec.describe "Federation hardening (F-04/F-05/F-06)", type: :service do
       def req.headers; @h; end
       def req.request_method; "POST"; end
       def req.fullpath; "/inbox"; end
-      req.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => "now" })
+      req.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => Time.current.httpdate })
       # Claiming a DIFFERENT actor in the body must fail even with a valid sig.
       expect(Federation::SignatureVerifier.verify(request: req, actor_uri: "https://evil.edu/actors/x")).to be false
     end
@@ -24,14 +24,14 @@ RSpec.describe "Federation hardening (F-04/F-05/F-06)", type: :service do
     it "accepts a valid signature from the matching actor" do
       key = OpenSSL::PKey::RSA.new(2048)
       actor = create(:federation_actor, public_key_pem: key.public_key.to_pem)
-      signed_string = "(request-target): post /inbox\nhost: adun.unifed.ng\ndate: now"
+      signed_string = "(request-target): post /inbox\nhost: adun.unifed.ng\ndate: #{Time.current.httpdate}"
       sig = Base64.strict_encode64(key.sign(OpenSSL::Digest::SHA256.new, signed_string))
       sig_header = %(keyId="#{actor.actor_uri}#main-key",algorithm="rsa-sha256",headers="(request-target) host date",signature="#{sig}")
       req = Object.new
       def req.headers; @h; end
       def req.request_method; "POST"; end
       def req.fullpath; "/inbox"; end
-      req.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => "now" })
+      req.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => Time.current.httpdate })
       expect(Federation::SignatureVerifier.verify(request: req, actor_uri: actor.actor_uri)).to be true
     end
   end

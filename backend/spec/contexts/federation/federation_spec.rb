@@ -47,7 +47,7 @@ RSpec.describe Federation::SignatureVerifier, type: :service do
     key = OpenSSL::PKey::RSA.new(2048)
     actor = create(:federation_actor, public_key_pem: key.public_key.to_pem)
 
-    signed_string = "(request-target): post /inbox\nhost: adun.unifed.ng\ndate: now"
+    signed_string = "(request-target): post /inbox\nhost: adun.unifed.ng\ndate: #{Time.current.httpdate}"
     sig = Base64.strict_encode64(key.sign(OpenSSL::Digest::SHA256.new, signed_string))
     sig_header = %(keyId="#{actor.actor_uri}#main-key",algorithm="rsa-sha256",headers="(request-target) host date",signature="#{sig}")
 
@@ -55,7 +55,7 @@ RSpec.describe Federation::SignatureVerifier, type: :service do
     def good_request.headers; @h; end
     def good_request.request_method; "POST"; end
     def good_request.fullpath; "/inbox"; end
-    good_request.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => "now" })
+    good_request.instance_variable_set(:@h, { "Signature" => sig_header, "host" => "adun.unifed.ng", "date" => Time.current.httpdate })
 
     expect(Federation::SignatureVerifier.verify(request: good_request, actor_uri: actor.actor_uri)).to be true
 
@@ -65,7 +65,7 @@ RSpec.describe Federation::SignatureVerifier, type: :service do
     def bad_request.headers; @h; end
     def bad_request.request_method; "POST"; end
     def bad_request.fullpath; "/inbox"; end
-    bad_request.instance_variable_set(:@h, { "Signature" => bad_header, "host" => "adun.unifed.ng", "date" => "now" })
+    bad_request.instance_variable_set(:@h, { "Signature" => bad_header, "host" => "adun.unifed.ng", "date" => Time.current.httpdate })
 
     expect(Federation::SignatureVerifier.verify(request: bad_request, actor_uri: actor.actor_uri)).to be false
   end
