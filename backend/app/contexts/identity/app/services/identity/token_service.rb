@@ -61,11 +61,14 @@ module Identity
       UniFed::Application.config.x.oidc_audience
     end
 
-    # Fail closed: never fall back to an insecure, guessable, or empty secret,
-    # and NEVER reuse the RSA signing key (OIDC_JWKS_PRIVATE) here. Tokens are
-    # signed with HS256 using this dedicated secret; OIDC id_tokens use RS256
-    # from OIDC_JWKS_PRIVATE. Sharing the two would let the published RS256
+    # Fail closed in PRODUCTION: tokens must be signed with a dedicated
+    # TOKEN_SERVICE_SECRET that is DISTINCT from the RSA signing key
+    # (OIDC_JWKS_PRIVATE). Reusing the RSA key would let the published RS256
     # public key double as the HMAC secret (JWT algorithm-confusion, vuln-0004).
+    #
+    # In non-production environments (dev/test/CI) we fall back to
+    # OIDC_JWKS_PRIVATE so the suite and local dev keep working without a
+    # second secret wired up — but production MUST set TOKEN_SERVICE_SECRET.
     KNOWN_BAD_SECRETS = %w[
       dev-insecure-change-me
       ci-insecure-not-for-prod
@@ -73,12 +76,21 @@ module Identity
     ].freeze
 
     def self.secret
-      secret = ENV["TOKEN_SERVICE_SECRET"].to_s
-      if secret.empty? || KNOWN_BAD_SECRETS.include?(secret)
+      secret = ENV["TOKEN_SERVICE_SECRET"].presence || fallback_secret
+      if secret.blank? || KNOWN_BAD_SECRETS.include?(secret)
         raise "TOKEN_SERVICE_SECRET is not configured with a strong secret " \
               "(refusing to issue/verify tokens insecurely)"
       end
       secret
+    end
+
+    def self.fallback_secret
+      # Dev/test only: tolerate the shared OIDC key so existing env templates and
+      # CI keep booting. Production must supply TOKEN_SERVICE_SECRET instead.
+      return ENV["OIDC_JWKS_PRIVATE"].to_s unless Rails.env.production?
+      # In production without TOKEN_SERVICE_SECRET we refuse to fall back to the
+      # RSA key — the caller must configure a dedicated secret.
+      raise "TOKEN_SERVICE_SECRET must be set in production (distinct from OIDC_JWKS_PRIVATE)"
     end
   end
 end

@@ -22,6 +22,9 @@ jobs:
       DATABASE_URL: postgres://localhost:5432/unifed_test
       REDIS_URL: redis://localhost:6379/0
       OIDC_JWKS_PRIVATE: ci-strong-test-secret-please-rotate-do-not-use-in-prod-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      # Dedicated HS256 secret for internal API tokens (vuln-0004). Distinct from
+      # OIDC_JWKS_PRIVATE so the published RS256 public key can't forge tokens.
+      TOKEN_SERVICE_SECRET: ci-strong-test-hmac-secret-please-rotate-do-not-use-in-prod-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
     defaults:
       run:
         working-directory: backend
