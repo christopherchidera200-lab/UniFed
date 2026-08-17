@@ -197,7 +197,9 @@ test("smart campus page renders places", async ({ page }) => {
   await page.fill('input[type="password"]', "Passw0rd!");
   await page.click('button[type="submit"]');
   await page.goto("/campus");
-  await expect(page.getByText("Smart Campus")).toBeVisible();
+  // Scope to the page <h2> heading so the drawer's duplicate nav label
+  // ("Smart Campus" link) doesn't trip Playwright strict mode.
+  await expect(page.getByRole("heading", { name: "Smart Campus" })).toBeVisible();
   await expect(page.getByText("Main Library")).toBeVisible();
 });
 
@@ -207,7 +209,8 @@ test("assignments page renders the student view", async ({ page }) => {
   await page.fill('input[type="password"]', "Passw0rd!");
   await page.click('button[type="submit"]');
   await page.goto("/assignments");
-  await expect(page.getByText("Assignments")).toBeVisible();
+  // Scope to the page <h2> heading — the drawer also has an "Assignments" link.
+  await expect(page.getByRole("heading", { name: "Assignments" })).toBeVisible();
   await expect(page.getByText("Essay 1")).toBeVisible();
 });
 
