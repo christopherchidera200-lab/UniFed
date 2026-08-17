@@ -12,22 +12,20 @@ services:
       POSTGRES_USER: unifed
       POSTGRES_PASSWORD: unifed
       POSTGRES_DB: unifed
-    ports:
-      - "5432:5432"
+    # F-11: keep the DB on the internal compose network only; never publish 5432.
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U unifed"]
+      test: [CMD-SHELL, pg_isready -U unifed]
       interval: 5s
       timeout: 3s
       retries: 10
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    # F-11: keep Redis on the internal compose network only; never publish 6379.
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [CMD, redis-cli, ping]
       interval: 5s
       timeout: 3s
       retries: 10

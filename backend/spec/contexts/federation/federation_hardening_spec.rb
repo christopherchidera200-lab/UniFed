@@ -62,6 +62,35 @@ RSpec.describe "Federation hardening (F-04/F-05/F-06)", type: :service do
     end
   end
 
+  # --- F-04: SSRF guard on remote key fetch ---
+  describe "SignatureVerifier SSRF guard (F-04)" do
+    it "blocks the cloud metadata IP (169.254.169.254)" do
+      expect(Federation::SignatureVerifier.ssrf_blocked?("169.254.169.254")).to be true
+    end
+
+    it "blocks private/loopback IP ranges" do
+      expect(Federation::SignatureVerifier.ssrf_blocked?("10.0.0.5")).to be true
+      expect(Federation::SignatureVerifier.ssrf_blocked?("192.168.1.1")).to be true
+      expect(Federation::SignatureVerifier.ssrf_blocked?("127.0.0.1")).to be true
+      expect(Federation::SignatureVerifier.ssrf_blocked?("172.16.0.1")).to be true
+    end
+
+    it "allows a public IP/host" do
+      # Use a well-known public IP literal to avoid DNS dependency in CI.
+      expect(Federation::SignatureVerifier.ssrf_blocked?("8.8.8.8")).to be false
+    end
+
+    it "blocks blank/garbage hosts" do
+      expect(Federation::SignatureVerifier.ssrf_blocked?("")).to be true
+      expect(Federation::SignatureVerifier.ssrf_blocked?("not a host")).to be true
+    end
+
+    it "returns nil when fetching a key from a blocked host" do
+      expect(Federation::SignatureVerifier.fetch_remote_public_key("https://169.254.169.254/actor")).to be_nil
+      expect(Federation::SignatureVerifier.fetch_remote_public_key("http://8.8.8.8/actor")).to be_nil # http rejected
+    end
+  end
+
   # --- F-06: replay protection ---
   describe "InboxHandler replay protection (F-06)" do
     let(:local_actor) { Federation::ActorProvisioningService.provision(university) }

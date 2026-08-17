@@ -50,6 +50,12 @@ module Federation
     def self.fetch_remote_public_key(actor_uri)
       uri = URI.parse(actor_uri)
       return nil unless uri.is_a?(URI::HTTP) && uri.scheme == "https"
+
+      # F-04 SSRF guard: resolve the host and reject internal/link-local/
+      # metadata IP ranges before connecting. A remote actor key fetch must
+      # never reach cloud metadata (169.254.169.254) or private networks.
+      return nil if ssrf_blocked?(uri.host)
+
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.open_timeout = 5
@@ -60,6 +66,29 @@ module Federation
       doc.dig("publicKey", "publicKeyPem")
     rescue StandardError
       nil
+    end
+
+    # Returns true if the host resolves to a non-public address (SSRF risk).
+    # Blocks private / loopback / link-local (e.g. 169.254.169.254 metadata)
+    # ranges; allows everything else.
+    def self.ssrf_blocked?(host)
+      return true if host.blank?
+      # Literal IP: validate directly (no DNS needed).
+      if host.match?(/\A\d{1,3}(\.\d{1,3}){3}\z/)
+        ip = IPAddr.new(host) rescue nil
+        return true if ip.nil?
+        return true if ip.loopback? || ip.link_local? || ip.private?
+        return false
+      end
+      # Hostname: resolve and reject if any address is non-public.
+      resolved = Addrinfo.getaddrinfo(host, "https", :INET, :STREAM, nil,
+                                      Socket::AI_NUMERICHOST | Socket::AI_NUMERICSERV).map(&:ip_address)
+      resolved.any? do |addr|
+        ip = IPAddr.new(addr) rescue nil
+        ip.nil? || ip.loopback? || ip.link_local? || ip.private?
+      end
+    rescue SocketError, Errno::ECONNREFUSED, StandardError
+      true
     end
 
     def self.parse_sig_header(header)

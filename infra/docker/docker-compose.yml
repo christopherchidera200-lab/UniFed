@@ -31,7 +31,8 @@ services:
     image: opensearchproject/opensearch:2.15.0
     environment:
       discovery.type: single-node
-      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "Un1Fed!Os2026"
+      # F-07: no committed plaintext password — inject via deployment secrets.
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-changeme-in-dev-only}
       plugins.security.disabled: "true"
     ports: ["9200:9200"]
     healthcheck:
@@ -44,8 +45,9 @@ services:
     image: minio/minio:latest
     command: ["server", "/data", "--console-address", ":9001"]
     environment:
-      MINIO_ROOT_USER: unifed
-      MINIO_ROOT_PASSWORD: "Un1Fed!Mm2026"
+      # F-07: no committed plaintext credentials — inject via deployment secrets.
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-changeme-in-dev-only}
     ports: ["9000:9000", "9001:9001"]
     volumes:
       - miniodata:/data
@@ -57,12 +59,12 @@ services:
     command: ["bundle","exec","rails","server","-b","0.0.0.0","-p","3000"]
     environment:
       RAILS_ENV: development
-      DATABASE_URL: "postgres://unifed:unifed@postgres:5432/unifed_dev"
-      REDIS_URL: "redis://:unifed@redis:6379/0"
+      DATABASE_URL: "postgres://unifed:${POSTGRES_PASSWORD:-unifed}@postgres:5432/unifed_dev"
+      REDIS_URL: "redis://:${REDIS_PASSWORD:-unifed}@redis:6379/0"
       OPENSEARCH_URL: "http://opensearch:9200"
       MINIO_URL: "http://minio:9000"
-      MINIO_ACCESS_KEY: unifed
-      MINIO_SECRET_KEY: "Un1Fed!Mm2026"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-changeme-in-dev-only}
     ports: ["3000:3000"]
     depends_on:
       postgres: { condition: service_healthy }
