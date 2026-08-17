@@ -12,18 +12,13 @@ module Api
       # POST /api/v1/consent  {purpose, granted}
       def create
         purpose = params.dig(:purpose)
-        granted = params.dig(:granted)
         return render json: { error: "purpose_required" }, status: :bad_request unless purpose
+        granted = ActiveModel::Type::Boolean.new.cast(params.dig(:granted))
         rec = current_user.consent_records.find_or_initialize_by(purpose: purpose)
-        if granted
-          rec.withdrawn_at = nil
-          rec.granted = true
-          rec.save!
-        else
-          rec.grant! if rec.new_record?
-          rec.withdraw!
-        end
-        render json: { ok: true, purpose: purpose, granted: rec.granted?, withdrawn: rec.withdrawn? }, status: :ok
+        rec.granted = granted
+        rec.withdrawn_at = granted ? nil : Time.current
+        rec.save!
+        render json: { ok: true, purpose: purpose, granted: rec.granted, withdrawn: rec.withdrawn? }, status: :ok
       end
     end
   end
