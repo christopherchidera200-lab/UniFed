@@ -51,5 +51,21 @@
 
 ## 5. Verification evidence
 
-- Consent request spec: `spec/requests/consent_spec.rb` → 6 examples, 0 failures.
-- No existing test regressed (identity + admin suites green).
+- Consent request spec: `spec/requests/consent_spec.rb` → 29 examples, 0 failures (incl. identity
+  context + request specs regression).
+- No existing test regressed.
+
+## 6. Implemented this turn (consent versioning — branch `legal/consent-versioning`)
+
+- `db/schema/unifed_phase0.sql`: added `consent_version text NOT NULL DEFAULT '1.0'` and
+  `granted_at timestamptz` to `identity_consent_records`.
+- `backend/db/migrate/20260817000001_add_consent_version_to_identity_consent_records.rb`: matching
+  Rails migration for dev/staging.
+- `backend/config/application.rb`: `config.x.consent_policy_version` (ENV `CONSENT_POLICY_VERSION`,
+  default `1.0`) — bump when the privacy policy / consent terms change.
+- `consent_record.rb`: `validates :consent_version, presence: true`; `before_save` enforces the audit
+  invariant *granted ⇒ granted_at present* across every write path.
+- `consent_controller.rb`: stamps `consent_version` (param or config default) + `granted_at` on grant;
+  `GET /api/v1/consent` now returns both.
+- Remaining MISSING controls (unchanged): data-export endpoint, account-deletion workflow, retention
+  job, central access audit log, repository `LICENSE`.

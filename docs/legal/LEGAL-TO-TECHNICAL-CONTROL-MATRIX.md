@@ -7,8 +7,8 @@
 |---|---|---|---|---|---|---|
 | Consent capture (NDPA) | Consent grant/withdraw API | `app/controllers/api/v1/consent_controller.rb`, `models/identity/consent_record.rb` | FIXED (was 500) | None (verify) | `spec/requests/consent_spec.rb` | 6/0 ✅ |
 | Consent association | `has_many :consent_records` | `models/identity/user.rb` | FIXED | None | consent_spec | 6/0 ✅ |
-| Consent timestamp | `created_at`/`withdrawn_at`; no `granted_at` | `consent_record.rb` | PARTIAL | Add `granted_at` + migration | spec | DDL in `db/schema/unifed_phase0.sql` |
-| Consent version | none | — | MISSING | Add `consent_version` column | spec | — |
+| Consent timestamp | `created_at`/`withdrawn_at`; now `granted_at` | `consent_record.rb` | DONE (this turn) | None | `consent_spec` | 29/0 ✅ |
+| Consent version | `consent_version` column + config | `consent_record.rb`, `consent_controller.rb`, `application.rb` | DONE (this turn) | None | `consent_spec` | 29/0 ✅ |
 | Data export (portability) | export endpoint | none | MISSING | Build `GET /api/v1/me/export` | spec | — |
 | Account deletion | `status` enum + cascade destroy | `models/identity/user.rb` | PARTIAL | Self-service delete workflow | spec | — |
 | Access audit trail | consent ledger; no central authz log | `consent_record.rb` | PARTIAL | Add audit log table | spec | — |
