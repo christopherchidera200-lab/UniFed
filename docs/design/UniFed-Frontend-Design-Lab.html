@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UniFed Design Lab — Frontend IA / Color / Components</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* --- ACTUAL UniFed tokens (frontend/src/design/tokens.ts) --- */
+  --navy-50:#eef2fb; --navy-100:#dbe4f3; --navy-200:#b6c6e6; --navy-300:#84a3d6;
+  --navy-400:#4f6ec2; --navy-500:#1E3A5F; --navy-600:#18304f; --navy-700:#13263f;
+  --navy-800:#0e1c30; --navy-900:#0b1430; --navy-950:#070c1f;
+  --brand-400:#60a5fa; --brand-500:#2563EB; --brand-600:#1d4ed8;
+  --saffron-200:#fed7aa; --saffron-300:#fdba74; --saffron-400:#fb923c;
+  --saffron-500:#f97316; --saffron-600:#A16207;
+  --ink:#0F172A; --ink-muted:#475569; --ink-subtle:#94a3b8;
+  --surface-light:#FFFFFF; --surface-dark:#0b1430;
+  --radius-sm:10px; --radius-md:16px; --radius-lg:22px; --radius-pill:999px;
+  --shadow-soft:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+  --shadow-lift:0 4px 12px rgba(15,23,42,.08),0 18px 40px rgba(15,23,42,.12);
+  --motion:220ms cubic-bezier(.22,1,.36,1);
+  --font-display:"DM Sans",system-ui,sans-serif;
+  --font-body:"DM Sans",system-ui,sans-serif;
+  --font-serif:"Newsreader",Georgia,serif;
+
+  /* --- EXTENSION: content-type accents (the brief's core ask) --- */
+  --ct-assignment:#2563EB;  --ct-assignment-bg:#eff6ff;
+  --ct-research:#7C3AED;    --ct-research-bg:#f5f3ff;
+  --ct-announce:#DC2626;    --ct-announce-bg:#fef2f2;
+  --ct-discussion:#0891B2;  --ct-discussion-bg:#ecfeff;
+  --ct-admin:#A16207;       --ct-admin-bg:#fff7ed;
+  --ct-event:#059669;       --ct-event-bg:#ecfdf5;
+  --ct-career:#DB2777;      --ct-career-bg:#fdf2f8;
+
+  /* --- EXTENSION: role accents --- */
+  --role-student:#2563EB;  --role-lecturer:#7C3AED;
+  --role-deptadmin:#A16207; --role-sysadmin:#DC2626;
+
+  /* --- EXTENSION: federation institution palettes (dept/faculty warm logic) --- */
+  --fed-adun:#C8102E; --fed-uniabuja:#0B6E4F; --fed-unn:#1565C0; --fed-oau:#6A1B9A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--navy-50);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;margin:0}
+a{color:var(--brand-500)}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 20px 96px}
+.eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-subtle)}
+.lead{color:var(--ink-muted);max-width:70ch}
+section{margin-top:56px;scroll-margin-top:80px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--navy-100);padding-bottom:10px;margin-bottom:22px}
+.sec-head .n{font-family:var(--font-serif);font-style:italic;font-weight:600;color:var(--saffron-500);font-size:20px}
+.nav-chip{position:sticky;top:0;z-index:30;background:rgba(238,242,251,.9);backdrop-filter:blur(8px);padding:12px 0;border-bottom:1px solid var(--navy-100);margin-bottom:8px}
+.nav-chip a{margin-right:14px;font-size:13px;font-weight:600;text-decoration:none;color:var(--navy-600)}
+.card-surface{background:var(--surface-light);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.muted{color:var(--ink-muted)}
+.subtle{color:var(--ink-subtle);font-size:13px}
+pre{background:var(--navy-950);color:#dbe4f3;border-radius:var(--radius-md);padding:16px;overflow:auto;font-size:12.5px;line-height:1.6}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+/* ---- phone frame ---- */
+.phone{width:380px;max-width:100%;background:var(--navy-950);border-radius:34px;padding:12px;box-shadow:var(--shadow-lift);margin:0 auto}
+.phone-screen{background:#070c1f;border-radius:24px;overflow:hidden;min-height:680px;position:relative;color:#e8eef9}
+.phone-top{height:14px}
+.scrroll{height:680px;overflow:auto;padding:0 0 84px}
+.appbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-between;padding:12px 14px;background:rgba(7,12,31,.82);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{font-family:var(--font-display);font-weight:800;font-size:17px;color:#fff}
+.brand b{color:var(--saffron-400)}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.06);color:#cdd9ee}
+.feed{padding:14px;display:flex;flex-direction:column;gap:12px}
+/* content cards */
+.post{border-radius:var(--radius-md);padding:14px;background:#0e1c30;border:1px solid rgba(255,255,255,.06)}
+.post .head{display:flex;gap:10px;align-items:center}
+.ava{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;font-size:14px;flex:none}
+.name{font-weight:700;color:#fff;font-size:14px;display:flex;align-items:center;gap:6px}
+.handle{color:#8aa0c4;font-size:12px}
+.fed{font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--radius-pill);color:#fff}
+.rolebadge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-pill);text-transform:uppercase;letter-spacing:.04em}
+.ctype{position:absolute;left:0;top:14px;width:4px;height:calc(100% - 28px);border-radius:4px}
+.post .body{margin-top:10px;color:#cdd9ee;font-size:13.5px}
+.ctlabel{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;margin-bottom:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.actbar{display:flex;gap:18px;margin-top:12px;color:#8aa0c4;font-size:12px}
+.actbar span{display:flex;align-items:center;gap:5px}
+/* drawer */
+.drawer{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none}
+.drawer.open{display:block}
+.drawer-panel{position:absolute;right:0;top:0;bottom:0;width:78%;background:#0b1430;border-left:1px solid rgba(255,255,255,.08);padding:16px;overflow:auto}
+.drawer-panel .me{display:flex;gap:12px;align-items:center;padding:10px;border-radius:var(--radius-md);background:#13263f}
+.navgroup{margin-top:14px}
+.navgroup h4{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7e93b8;margin:14px 0 6px}
+.navitem{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;color:#dbe4f3;font-weight:600;font-size:14px}
+.navitem.active{background:#13263f;color:#fff}
+.navitem .dot{width:8px;height:8px;border-radius:50%}
+.primarybtn{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--saffron-500);color:#1a1003;font-weight:800;padding:13px;border-radius:14px}
+/* bottom nav */
+.bnav{position:absolute;left:0;right:0;bottom:0;height:64px;background:rgba(11,20,48,.92);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-around}
+.bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#8aa0c4;text-decoration:none}
+.bnav a.active{color:var(--saffron-400)}
+.bnav .fab{width:46px;height:46px;border-radius:16px;background:var(--saffron-500);color:#1a1003;display:grid;place-items:center;margin-top:-14px;box-shadow:0 8px 20px rgba(249,115,22,.4)}
+/* session toast */
+.toast{position:absolute;left:12px;right:12px;bottom:74px;background:#13263f;border:1px solid #2b3c5e;border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#e8eef9;box-shadow:var(--shadow-lift);z-index:8}
+.toast .dot{width:9px;height:9px;border-radius:50%;background:#f59e0b;flex:none}
+/* profile card */
+.pcard{display:flex;gap:14px;align-items:center;padding:16px;border-radius:var(--radius-md);background:#0e1c30;border:1px solid rgba(255,255,255,.07)}
+.kpi{background:#0e1c30;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px;text-align:center}
+.kpi .v{font-family:var(--font-display);font-weight:800;font-size:22px;color:#fff}
+.kpi .l{font-size:11px;color:#8aa0c4;margin-top:3px}
+/* tabs */
+.tabs{display:flex;gap:6px;padding:0 14px;margin-bottom:12px}
+.tab{padding:8px 12px;font-size:13px;font-weight:600;border-radius:10px;color:#8aa0c4}
+.tab.active{background:#13263f;color:#fff}
+button.cta{font:inherit;cursor:pointer;border:none}
+}
+</style>
+</head>
+<body>
+<div class="nav-chip wrap" style="max-width:1180px">
+  <a href="#ia">1 · IA</a><a href="#color">2 · Color</a><a href="#type">Type</a>
+  <a href="#components">3 · Components</a><a href="#layouts">4 · Layouts</a>
+  <a href="#rationale">5 · Rationale</a><a href="#corrections">Corrections</a>
+</div>
+
+<div class="wrap">
+  <p class="eyebrow">UniFed Nigeria — Frontend Design Brief Response</p>
+  <h1>From Mastodon structure to a federated academic OS</h1>
+  <p class="lead">A design system response grounded in the <b>actual UniFed frontend</b> (Next.js Pages Router, <code>tokens.ts</code> = institutional navy + saffron, DM Sans), not the Mastodon screenshots (used only for information architecture). All component specs below are rendered live so you can confirm the "why" before implementation.</p>
+
+  <!-- ============ 1 IA ============ -->
+  <section id="ia">
+    <div class="sec-head"><span class="n">1</span><h2>Information Architecture</h2></div>
+    <p class="lead">The brief assumed <code>/campus /assignments /research /admin</code> as primary tabs, but the real <code>tokens.nav</code> ships five tabs: <b>Home · Connect · Create · Discover · Profile</b>. Resolution: keep the 5-tab bar for thumb-reach (Mastodon pattern, endorsed by the brief), and route the academic surfaces through it + a permission-gated slide-out drawer. This matches the existing code rather than fighting it.</p>
+    <div class="grid2" style="margin-top:18px">
+      <div class="card-surface">
+        <h3 style="font-size:15px">Route → Surface map (real pages)</h3>
+        <pre>/                 → Home (personalised Campus Feed)
+/campus           → Campus Feed (Announcements · Discussions · Events · Research tabs)
+/assignments      → Assignments (role-aware: student=list, lecturer=+create)
+/research         → Research (publications, groups)
+/admin            → Administration (RBAC: actor_type=admin ONLY)
+/notifications    → Notifications (threaded)
+/profile          → Profile (LIVE-bound, see Corrections)
+/career /catalog /connect /discover /events /library /academic/records → secondary
+/login /signup    → auth (outside chrome)</pre>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:15px">Bottom tab bar (5, mandated)</h3>
+        <pre>Home      /            (Campus Feed)
+Connect   /connect      (people + federation)
+Create    /create       (context action FAB)
+Discover  /discover     (catalog/research/events)
+Profile   /profile      (live identity)</pre>
+        <h3 style="font-size:15px;margin-top:14px">Slide-out drawer (Mastodon pattern)</h3>
+        <pre>— CORE —
+Home / Campus Feed
+Assignments
+Research
+Notifications
+— SECONDARY (divider) —
+Career · Library · Catalog · Events · Smart Campus
+— ADMIN (shown ONLY if actor_type=admin) —
+Administration → /admin</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2 COLOR ============ -->
+  <section id="color">
+    <div class="sec-head"><span class="n">2</span><h2>Color &amp; Typography System</h2></div>
+    <div class="grid3">
+      <div class="card-surface">
+        <h3 style="font-size:14px">Base — actual tokens</h3>
+        <div class="legend">
+          <span class="tag" style="background:var(--navy-500);color:#fff">navy-500 #1E3A5F</span>
+          <span class="tag" style="background:var(--navy-950);color:#fff">navy-950 #070c1f</span>
+          <span class="tag" style="background:var(--saffron-500);color:#1a1003">saffron #f97316</span>
+          <span class="tag" style="background:var(--brand-500);color:#fff">brand #2563EB</span>
+        </div>
+        <p class="subtle" style="margin-top:10px">Institutional, warm, low-glare dark — deliberately NOT the monochrome violet of the Mastodon reference.</p>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:14px">Content-type accents</h3>
+        <div class="legend">
+          <span class="tag" style="background:var(--ct-assignment-bg);color:var(--ct-assignment)">Assignment</span>
+          <span class="tag" style="background:var(--ct-research-bg);color:var(--ct-research)">Research</span>
+          <span class="tag" style="background:var(--ct-announce-bg);color:var(--ct-announce)">Announcement</span>
+          <span class="tag" style="background:var(--ct-discussion-bg);color:var(--ct-discussion)">Discussion</span>
+          <span class="tag" style="background:var(--ct-admin-bg);color:var(--ct-admin)">Admin</span>
+          <span class="tag" style="background:var(--ct-event-bg);color:var(--ct-event)">Event</span>
+          <span class="tag" style="background:var(--ct-career-bg);color:var(--ct-career)">Career</span>
+        </div>
+        <p class="subtle" style="margin-top:10px">Color signals content type so a scrolling feed is scannable without reading every line.</p>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:14px">Role + federation</h3>
+        <div class="legend">
+          <span class="tag" style="background:var(--role-student);color:#fff">Student</span>
+          <span class="tag" style="background:var(--role-lecturer);color:#fff">Lecturer</span>
+          <span class="tag" style="background:var(--role-deptadmin);color:#fff">Dept Admin</span>
+          <span class="tag" style="background:var(--role-sysadmin);color:#fff">Sys Admin</span>
+        </div>
+        <div class="legend" style="margin-top:8px">
+          <span class="tag" style="background:var(--fed-adun);color:#fff">ADUN</span>
+          <span class="tag" style="background:var(--fed-uniabuja);color:#fff">UniAbuja</span>
+          <span class="tag" style="background:var(--fed-unn);color:#fff">UNN</span>
+          <span class="tag" style="background:var(--fed-oau);color:#fff">OAU</span>
+        </div>
+        <p class="subtle" style="margin-top:10px">Per-institution crest color = instant federation legibility.</p>
+      </div>
+    </div>
+    <div class="card-surface" style="margin-top:16px">
+      <h3 style="font-size:14px">Typography</h3>
+      <pre>Display / UI : DM Sans (already in tokens) — used for headings, nav, KPIs, buttons.
+Body / content : DM Sans 14–15px, line-height 1.5.
+Editorial accent : Newsreader (serif) for research abstracts, announcement leads, empty-state copy.
+Numeric : DM Sans tabular for KPIs, due-dates, distances.</pre>
+      <p class="subtle">Serif is used sparingly to give academic "weight" to long-form content — not as a decoration.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3 COMPONENTS ============ -->
+  <section id="components">
+    <div class="sec-head"><span class="n">3</span><h2>Component Specs (live)</h2></div>
+
+    <h3 style="margin:8px 0 6px;font-size:15px">3.1 Federation badge</h3>
+    <div class="legend">
+      <span class="fed" style="background:var(--fed-adun)">◆ ADUN</span>
+      <span class="fed" style="background:var(--fed-uniabuja)">◆ UniAbuja</span>
+      <span class="fed" style="background:var(--fed-unn)">◆ UNN</span>
+      <span class="fed" style="background:var(--fed-oau)">◆ OAU</span>
+    </div>
+    <p class="subtle" style="margin-top:6px">A diamond + short crest code, color = home institution. Appears on every post header, profile card, and notification. Solves "can't tell the instance at a glance" from the Mastodon refs.</p>
+
+    <h3 style="margin:24px 0 6px;font-size:15px">3.2 Content cards — one variant per type (scannable)</h3>
+    <div class="phone" style="margin-top:10px">
+      <div class="phone-screen">
+        <div class="appbar"><span class="brand">Uni<span style="color:var(--saffron-400)">Fed</span></span><span class="iconbtn">☰</span></div>
+        <div class="scrroll">
+          <div class="feed">
+            <!-- announcement -->
+            <div class="post" style="position:relative">
+              <span class="ctype" style="background:var(--ct-announce)"></span>
+              <div class="ctlabel" style="color:var(--ct-announce)">📢 Announcement · Registry</div>
+              <div class="head">
+                <span class="ava" style="background:var(--role-deptadmin)">RA</span>
+                <div><div class="name">Registry <span class="rolebadge" style="background:var(--role-deptadmin);color:#fff">Dept Admin</span></div><div class="handle">@registry · <span class="fed" style="background:var(--fed-adun)">◆ ADUN</span></div></div>
+              </div>
+              <div class="body">Semester registration closes <b>Aug 30</b>. Late fees apply after the portal lock.</div>
+              <div class="actbar"><span>↩ 4</span><span>⇄ 12</span><span>★ 30</span></div>
+            </div>
+            <!-- assignment -->
+            <div class="post" style="position:relative">
+              <span class="ctype" style="background:var(--ct-assignment)"></span>
+              <div class="ctlabel" style="color:var(--ct-assignment)">📝 Assignment · Due Aug 24</div>
+              <div class="head">
+                <span class="ava" style="background:var(--role-lecturer)">DO</span>
+                <div><div class="name">Dr. Okeke <span class="rolebadge" style="background:var(--role-lecturer);color:#fff">Lecturer</span></div><div class="handle">@dokeke · <span class="fed" style="background:var(--fed-adun)">◆ ADUN</span></div></div>
+              </div>
+              <div class="body">CSC 301 — Lab 4 submission open on /assignments. Group of 3.</div>
+              <div class="chips"><span class="tag" style="background:var(--ct-assignment-bg);color:var(--ct-assignment)">CSC 301</span><span class="tag" style="background:var(--ct-event-bg);color:var(--ct-event)">3 days left</span></div>
+            </div>
+            <!-- research -->
+            <div class="post" style="position:relative">
+              <span class="ctype" style="background:var(--ct-research)"></span>
+              <div class="ctlabel" style="color:var(--ct-research)">🔬 Research · Publication</div>
+              <div class="head">
+                <span class="ava" style="background:var(--role-lecturer)">ME</span>
+                <div><div class="name">Prof. Eze <span class="rolebadge" style="background:var(--role-lecturer);color:#fff">Lecturer</span></div><div class="handle">@meze · <span class="fed" style="background:var(--fed-unn)">◆ UNN</span></div></div>
+              </div>
+              <div class="body" style="font-family:var(--font-serif)">"Federated identity for Nigerian tertiary institutions: a pilot" — now on /research.</div>
+            </div>
+            <!-- discussion -->
+            <div class="post" style="position:relative">
+              <span class="ctype" style="background:var(--ct-discussion)"></span>
+              <div class="ctlabel" style="color:var(--ct-discussion)">💬 Discussion</div>
+              <div class="head">
+                <span class="ava" style="background:var(--role-student)">KC</span>
+                <div><div class="name">Kemi <span class="rolebadge" style="background:var(--role-student);color:#fff">Student</span></div><div class="handle">@kemi · <span class="fed" style="background:var(--fed-adun)">◆ ADUN</span></div></div>
+              </div>
+              <div class="body">Anyone got the readings for GES 101? Sharing notes on the thread.</div>
+            </div>
+          </div>
+        </div>
+        <div class="bnav">
+          <a class="active" href="#">⌂<span>Home</span></a><a href="#">⚲<span>Connect</span></a>
+          <a class="fab" href="#">+</a><a href="#">⌖<span>Discover</span></a><a href="#">☺<span>Profile</span></a>
+        </div>
+      </div>
+    </div>
+    <p class="subtle">Each card shares a frame but differs by: colored left rail (content type), a typed label row, role badge on the author, and the federation crest. The eye reads color before text — exactly what the Mastodon reference lacks.</p>
+
+    <h3 style="margin:26px 0 6px;font-size:15px">3.3 Profile card (LIVE-data contract)</h3>
+    <div class="phone" style="margin-top:10px">
+      <div class="phone-screen">
+        <div class="appbar"><span class="brand">Uni<span style="color:var(--saffron-400)">Fed</span></span><span class="iconbtn">☀</span></div>
+        <div class="scrroll"><div class="feed">
+          <div class="pcard">
+            <span class="ava" style="background:var(--role-student);width:54px;height:54px;font-size:18px">CC</span>
+            <div>
+              <div class="name" style="font-size:16px">Christopher Chidera <span class="rolebadge" style="background:var(--role-student);color:#fff">Student</span></div>
+              <div class="handle">@chidera · <span class="fed" style="background:var(--fed-adun)">◆ ADUN</span></div>
+              <div class="subtle" style="font-size:12px;margin-top:3px">B.Sc. Computer Science · 400L</div>
+            </div>
+          </div>
+          <div class="grid3" style="gap:10px;margin-top:4px">
+            <div class="kpi"><div class="v">12</div><div class="l">Courses</div></div>
+            <div class="kpi"><div class="v">3</div><div class="l">Groups</div></div>
+            <div class="kpi"><div class="v">4.0</div><div class="l">CGPA</div></div>
+          </div>
+          <div class="post"><div class="body" style="font-family:var(--font-serif)">"Building the federated university OS Nigerian schools actually own."</div></div>
+        </div></div>
+        <div class="bnav"><a href="#">⌂<span>Home</span></a><a href="#">⚲<span>Connect</span></a><a class="fab" href="#">+</a><a href="#">⌖<span>Discover</span></a><a class="active" href="#">☺<span>Profile</span></a></div>
+      </div>
+    </div>
+    <p class="subtle"><b>Data contract (must bind to session, never hardcode):</b> <code>useQuery(['profile']) → unifedApi.profile(token)</code> returns <code>display_name, email, actor_type, university{name,short_name}, bio, skills[]</code>. Render via the real fields; the avatar initials are derived from <code>display_name</code>. (Verified live in <code>profile.tsx</code> — see Corrections.)</p>
+
+    <h3 style="margin:26px 0 6px;font-size:15px">3.4 Notification row (threaded)</h3>
+    <div class="card-surface" style="max-width:420px">
+      <div style="display:flex;gap:11px;padding:12px;border-radius:14px;background:var(--navy-50)">
+        <span class="ava" style="background:var(--role-lecturer);width:36px;height:36px;font-size:13px">DO</span>
+        <div style="flex:1">
+          <div style="font-size:13px"><b>Dr. Okeke</b> <span class="subtle">replied · <span class="fed" style="background:var(--fed-adun);color:#fff;font-size:9px;padding:1px 6px;border-radius:99px">◆ ADUN</span></span></div>
+          <div class="subtle" style="font-size:12px">"Your Lab 4 submission looks good — resubmit with the fix."</div>
+          <div class="actbar" style="color:var(--ink-muted)"><span>↩ Reply</span><span>★ Save</span><span>⋯</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;font-size:15px">3.5 Primary nav drawer (Mastodon pattern, permission-gated)</h3>
+    <div class="phone" style="margin-top:10px">
+      <div class="phone-screen">
+        <div class="appbar"><span class="brand">Uni<span style="color:var(--saffron-400)">Fed</span></span><span class="iconbtn">☰</span></div>
+        <div class="scrroll"><div class="feed" style="opacity:.5">
+          <div class="post"><div class="body" style="font-family:var(--font-serif)">Campus feed behind the drawer…</div></div>
+        </div></div>
+        <div class="drawer open"><div class="drawer-panel">
+          <div class="me">
+            <span class="ava" style="background:var(--role-sysadmin)">CC</span>
+            <div><div style="font-weight:700;color:#fff">Christopher Chidera</div><div class="subtle" style="font-size:12px">@chidera · ◆ ADUN</div></div>
+          </div>
+          <div class="primarybtn">＋ New Post</div>
+          <div class="navgroup"><h4>Core</h4>
+            <div class="navitem active">⌂ Home / Campus Feed</div>
+            <div class="navitem">📝 Assignments</div>
+            <div class="navitem">🔬 Research</div>
+            <div class="navitem">🔔 Notifications</div>
+          </div>
+          <div class="navgroup"><h4>Secondary</h4>
+            <div class="navitem">💼 Career</div><div class="navitem">📚 Library</div>
+            <div class="navitem">🗺 Smart Campus</div><div class="navitem">🎫 Events</div>
+          </div>
+          <div class="navgroup"><h4>Administration</h4>
+            <div class="navitem" style="color:var(--saffron-400)">🛡 Administration → /admin</div>
+          </div>
+        </div></div>
+        <div class="bnav"><a class="active" href="#">⌂<span>Home</span></a><a href="#">⚲<span>Connect</span></a><a class="fab" href="#">+</a><a href="#">⌖<span>Discover</span></a><a href="#">☺<span>Profile</span></a></div>
+      </div>
+    </div>
+    <p class="subtle">The <b>Administration</b> group renders only when <code>actor_type === "admin"</code> (already enforced in <code>profile.tsx</code> + <code>RequireAuth</code>). Non-admins never see the item.</p>
+
+    <h3 style="margin:26px 0 6px;font-size:15px">3.6 Session-status affordance (real gap → UX)</h3>
+    <div class="phone" style="margin-top:10px">
+      <div class="phone-screen">
+        <div class="appbar"><span class="brand">Uni<span style="color:var(--saffron-400)">Fed</span></span><span class="iconbtn">☀</span></div>
+        <div class="scrroll"><div class="feed"><div class="post"><div class="body" style="font-family:var(--font-serif)">You're mid-action when the access token silently expires…</div></div></div></div>
+        <div class="toast"><span class="dot"></span><div>Session expiring — tap to stay signed in. (Auto-refresh not yet wired — see §Corrections)</div></div>
+        <div class="bnav"><a class="active" href="#">⌂<span>Home</span></a><a href="#">⚲<span>Connect</span></a><a class="fab" href="#">+</a><a href="#">⌖<span>Discover</span></a><a href="#">☺<span>Profile</span></a></div>
+      </div>
+    </div>
+    <p class="subtle">Non-intrusive toast, bottom-anchored above the tab bar. Pairs with the backend fix (refresh-token call on 401).</p>
+  </section>
+
+  <!-- ============ 4 LAYOUTS ============ -->
+  <section id="layouts">
+    <div class="sec-head"><span class="n">4</span><h2>Mobile-first Layouts (with role gates)</h2></div>
+    <div class="grid2">
+      <div class="card-surface">
+        <h3 style="font-size:14px">Home / Campus Feed</h3>
+        <pre>AppBar (logo + theme)
+Tabs: Announcements · Discussions · Events · Research
+  (Mastodon "Trending" sub-tabs, repurposed)
+Feed: content cards (§3.2)
+BottomNav (5)
+Session toast (conditional)</pre>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:14px">Assignments (role-aware)</h3>
+        <pre>Student view : list of due items, color = urgency
+Lecturer view: + "Create assignment" FAB,
+               cohort picker, grading queue
+Shared: content-type rail = assignment blue</pre>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:14px">Research</h3>
+        <pre>Hero filter (field · group · federation scope)
+Publication cards: serif abstract, author + crest
+"Submit" gated to lecturer/researcher role</pre>
+      </div>
+      <div class="card-surface">
+        <h3 style="font-size:14px">Admin (permission-gated)</h3>
+        <pre>if actor_type !== admin → redirect /404 (RequireAuth)
+KPI grid: users, roles, research groups,
+          campus places, assignments
+User table: actor_type + roles chips
+Entry only via drawer (hidden from others)</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5 RATIONALE ============ -->
+  <section id="rationale">
+    <div class="sec-head"><span class="n">5</span><h2>Rationale — deviations from the Mastodon reference</h2></div>
+    <div class="card-surface" style="display:grid;gap:14px">
+      <div><b>1 · Warm institutional palette, not violet-on-black.</b> The Mastodon reference is monochrome purple; UniFed already has navy + saffron tokens. We extend with <i>content-type</i> and <i>role/institution</i> accents so color encodes meaning (hierarchy + scan-ability), not just brand. This directly answers the brief's "everything competes for the same weight."</div>
+      <div><b>2 · Per-type card templates.</b> Mastodon renders every post as one generic text card. We give Assignments / Research / Announcements / Discussions / Admin distinct icon + accent + layout, so a feed is legible at a glance. This is the brief's central "don't repeat the boring" point.</div>
+      <div><b>3 · Federation crest on every item.</b> The Mastodon UI hides instance origin behind a small handle. Because federation is UniFed's premise, every post/profile/notification carries a color-coded institution chip (ADUN/UNN/OAU…). Cross-campus content becomes instantly legible.</div>
+      <div><b>4 · Role-aware identity.</b> Student / Lecturer / Dept-Admin / Sys-Admin get distinct badge colors in profile cards, post authorship, and notifications — a concept absent from the reference.</div>
+      <div><b>5 · Drawer bears the academic IA; 5-tab bar stays for thumbs.</b> Rather than cramming /campus /assignments /research /admin into 5 tabs (impossible), we keep the mandated 5 tabs and route academics through a grouped, permission-gated drawer — the exact Mastodon pattern the brief endorsed.</div>
+      <div><b>6 · Live-bound profile card.</b> We specify the data contract (<code>useQuery(['profile'])</code>) explicitly so no future card regresses to hardcoded placeholders — addressing the brief's stated risk at the spec level.</div>
+      <div><b>7 · Session toast tied to the real gap.</b> The reference has no session state. UniFed's <code>auth.ts</code> stores a refresh token but never calls it; we design the non-intrusive affordance AND flag the backend fix needed (§Corrections).</div>
+      <div><b>8 · Serif for academic long-form.</b> Newsreader is used only for research abstracts / announcement leads / empty-state copy — a deliberate "this is scholarship" cue, not decoration.</div>
+    </div>
+  </section>
+
+  <!-- ============ CORRECTIONS ============ -->
+  <section id="corrections">
+    <div class="sec-head"><span class="n">✓</span><h2>Source-verified corrections to the brief's "known issues"</h2></div>
+    <div class="card-surface" style="display:grid;gap:12px">
+      <div><b>Issue A — "Profile cards aren't rendering live data."</b> <span class="tag" style="background:var(--ct-event-bg);color:var(--ct-event)">NOT REPRODUCED</span> <code>frontend/src/pages/profile.tsx</code> binds via <code>useQuery(['profile']) → unifedApi.profile(token)</code> and renders <code>display_name, email, actor_type, bio, skills, university</code>. The card is already live. We keep the contract explicit in §3.3 to prevent future regressions, but no fix is needed.</div>
+      <div><b>Issue B — "Admin nav not permission-gated in UI."</b> <span class="tag" style="background:var(--ct-event-bg);color:var(--ct-event)">ALREADY ENFORCED</span> The Admin link renders only when <code>actor_type === "admin"</code> (<code>profile.tsx:117</code>), and <code>admin.tsx</code> is wrapped in <code>RequireAuth</code> + server-side <code>admin:users</code>. Both CSS-hide AND route-guard are present. Recommended: keep both layers (defense in depth).</div>
+      <div><b>Issue C — "Token auto-refresh gap."</b> <span class="tag" style="background:var(--ct-announce-bg);color:var(--ct-announce)">CONFIRMED REAL</span> <code>frontend/src/lib/auth.ts</code> stores <code>refresh_token</code> but never calls it; no expiry/refresh logic (comment admits it). <b>Backend fix required:</b> add a <code>refresh()</code> that POSTs the refresh token on 401, updates <code>unifed_access</code>, and surfaces expiry to the UI toast (§3.6). Until then the session toast is a stop-gap, not a cure.</div>
+      <div><b>IA mismatch.</b> Brief assumed <code>/campus /assignments /research /admin</code> as primary tabs; actual <code>tokens.nav</code> = Home/Connect/Create/Discover/Profile. Resolved via drawer (§1, §5.5).</div>
+    </div>
+    <p class="subtle" style="margin-top:10px">All findings above were read from the repo at <code>compliance/readiness</code> HEAD, not assumed. This design responds to the real system.</p>
+  </section>
+
+  <p class="subtle" style="margin-top:40px;text-align:center">Deliverable: design artifact (this file) + <code>docs/design/README.md</code> index. Next: confirm palette/IA direction, then I implement the components in <code>frontend/src/components/</code> against these specs.</p>
+</div>
+</body>
+</html>
