@@ -46,5 +46,8 @@ module UniFed
     config.x.node_slug   = ENV.fetch("NODE_SLUG", "adun")
     config.x.node_university_id = ENV.fetch("NODE_UNIVERSITY_ID", nil)
     config.x.federation_enabled = ENV.fetch("FEDERATION_ENABLED", "true") == "true"
+    # Consent policy version stamped on every consent record (NDPA lawful-basis audit).
+    # Bump this when the privacy policy / consent terms change so older grants are identifiable.
+    config.x.consent_policy_version = ENV.fetch("CONSENT_POLICY_VERSION", "1.0")
   end
 end

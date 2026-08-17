@@ -6,24 +6,27 @@ module Api
 
       # GET /api/v1/consent
       def index
-        render json: current_user.consent_records.select(:id, :purpose, :granted, :withdrawn_at, :created_at)
+        render json: current_user.consent_records.select(
+          :id, :purpose, :granted, :consent_version, :granted_at, :withdrawn_at, :created_at
+        )
       end
 
-      # POST /api/v1/consent  {purpose, granted}
+      # POST /api/v1/consent  {purpose, granted, version?}
       def create
         purpose = params.dig(:purpose)
-        granted = params.dig(:granted)
         return render json: { error: "purpose_required" }, status: :bad_request unless purpose
+        granted = ActiveModel::Type::Boolean.new.cast(params.dig(:granted))
+        version = params.dig(:version).presence || UniFed::Application.config.x.consent_policy_version
         rec = current_user.consent_records.find_or_initialize_by(purpose: purpose)
-        if granted
-          rec.withdrawn_at = nil
-          rec.granted = true
-          rec.save!
-        else
-          rec.grant! if rec.new_record?
-          rec.withdraw!
-        end
-        render json: { ok: true, purpose: purpose, granted: rec.granted?, withdrawn: rec.withdrawn? }, status: :ok
+        rec.granted = granted
+        rec.consent_version = version
+        rec.granted_at = granted ? Time.current : nil
+        rec.withdrawn_at = granted ? nil : Time.current
+        rec.save!
+        render json: {
+          ok: true, purpose: purpose, granted: rec.granted,
+          version: rec.consent_version, granted_at: rec.granted_at, withdrawn: rec.withdrawn?
+        }, status: :ok
       end
     end
   end

@@ -10,6 +10,7 @@ module Identity
     has_many :sessions, class_name: "Identity::Session", dependent: :destroy
     has_many :role_assignments, class_name: "Identity::RoleAssignment", dependent: :destroy
     has_many :roles, through: :role_assignments, class_name: "Identity::Role"
+    has_many :consent_records, class_name: "Identity::ConsentRecord", dependent: :destroy
 
     validates :email, presence: true,
               uniqueness: { scope: :university_id, case_sensitive: false }

@@ -98,6 +98,8 @@ CREATE TABLE IF NOT EXISTS identity_consent_records (
   user_id uuid NOT NULL REFERENCES identity_users(id) ON DELETE CASCADE,
   purpose text NOT NULL,
   granted boolean NOT NULL DEFAULT false,
+  consent_version text NOT NULL DEFAULT '1.0',
+  granted_at timestamptz,
   withdrawn_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
