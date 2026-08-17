@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle, Send, Heart, Bookmark } from "lucide-react";
 import { unifedApi, getToken } from "@/lib/api";
-import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
+import { SectionHeader } from "@/components/ui/Card";
+import { ContentCard } from "@/components/ContentCard";
 
 /** Connect (social) — Phase 1 federation surface. Shows a feed of posts.
  *  Data is best-effort; falls back to a friendly empty state. */
@@ -32,20 +32,10 @@ export default function ConnectPage() {
       <SectionHeader title="Connect" eyebrow="Your university community" />
       <div className="space-y-3">
         {feed.data?.map((p) => (
-          <Card key={p.id}>
-            <div className="flex items-center gap-2 mb-2">
-              <IconBadge className="bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
-                <MessageCircle size={16} />
-              </IconBadge>
-              <span className="font-medium text-ink text-sm">{p.author}</span>
-            </div>
-            <p className="text-ink/90 text-sm">{p.body}</p>
-            <div className="flex gap-4 mt-3 text-ink-muted text-xs">
-              <span className="flex items-center gap-1"><Heart size={14} /> Like</span>
-              <span className="flex items-center gap-1"><Send size={14} /> Share</span>
-              <span className="flex items-center gap-1"><Bookmark size={14} /> Save</span>
-            </div>
-          </Card>
+          <ContentCard
+            key={p.id}
+            item={{ id: p.id, type: "discussion", authorName: p.author, body: p.body }}
+          />
         ))}
         {feed.isLoading && <p className="text-ink-muted text-sm">Loading…</p>}
       </div>

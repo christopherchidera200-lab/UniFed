@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { User, Mail, GraduationCap, LogOut, AlertTriangle, ShieldCheck, ChevronRight, BookOpen } from "lucide-react";
+import { Mail, GraduationCap, LogOut, AlertTriangle, ShieldCheck, ChevronRight, BookOpen } from "lucide-react";
 import { unifedApi, getToken, type ProfileDTO } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { SectionHeader, Card, IconBadge } from "@/components/ui/Card";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { ProfileCard } from "@/components/ProfileCard";
 
 /** Profile — the authenticated user's real identity + quick actions. */
 export default function ProfilePage() {
@@ -16,7 +17,6 @@ export default function ProfilePage() {
     enabled: Boolean(token)
   });
 
-  const displayName = profile.data?.display_name || "UniFed User";
   const email = profile.data?.email;
 
   return (
@@ -37,20 +37,7 @@ export default function ProfilePage() {
 
         {profile.data && (
           <>
-            <Card className="flex items-center gap-4">
-              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-saffron-100 text-saffron-600 dark:bg-saffron-500/20 dark:text-saffron-300">
-                <User size={26} />
-              </span>
-              <div>
-                <div className="font-display font-bold text-lg text-ink">{displayName}</div>
-                <div className="text-ink-muted text-sm">{email}</div>
-                {profile.data.actor_type && (
-                  <div className="text-ink-subtle text-xs mt-0.5 capitalize">
-                    {profile.data.actor_type}
-                  </div>
-                )}
-              </div>
-            </Card>
+            <ProfileCard profile={profile.data} />
 
             {(profile.data.bio || (profile.data.skills && profile.data.skills.length > 0)) && (
               <Card className="space-y-3">
