@@ -24,7 +24,18 @@ export const tokens = {
       700: "#c2410c", 800: "#9a3412", 900: "#7c2d12"
     },
     ink: { DEFAULT: "#0F172A", muted: "#475569", subtle: "#94a3b8" },
-    surface: { light: "#FFFFFF", dark: "#0b1430" }
+    surface: { light: "#FFFFFF", dark: "#0b1430" },
+    // Content-type accents — encode meaning so a feed is scannable without reading.
+    ct: {
+      assignment: "#2563EB", research: "#7C3AED", announce: "#DC2626",
+      discussion: "#0891B2", admin: "#A16207", event: "#059669", career: "#DB2777"
+    },
+    // Role accents — who is acting.
+    role: {
+      student: "#2563EB", lecturer: "#7C3AED", deptadmin: "#A16207", sysadmin: "#DC2626"
+    },
+    // Federation institution palette — instant cross-campus legibility.
+    fed: { adun: "#C8102E", uniabuja: "#0B6E4F", unn: "#1565C0", oau: "#6A1B9A" }
   },
   font: {
     display: "var(--font-display, 'DM Sans', system-ui, sans-serif)",

@@ -10,7 +10,10 @@ const config: Config = {
         navy: tokens.color.navy,
         brand: tokens.color.brand,
         saffron: tokens.color.saffron,
-        ink: tokens.color.ink
+        ink: tokens.color.ink,
+        ct: tokens.color.ct,
+        role: tokens.color.role,
+        fed: tokens.color.fed
       },
       fontFamily: {
         display: ["var(--font-display)", "DM Sans", "system-ui", "sans-serif"],

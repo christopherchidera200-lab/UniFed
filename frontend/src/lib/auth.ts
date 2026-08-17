@@ -56,7 +56,48 @@ export function logout(): void {
 }
 
 /** Persist tokens into the existing session store (used after registration auto-login). */
-export function storeTokens(tokens: { access_token: string; refresh_token: string }): void {
+export function storeTokens(tokens: { access_token: string; refresh_token: string; expires_in?: number }): void {
   store()?.setItem(ACCESS_KEY, tokens.access_token);
   store()?.setItem(REFRESH_KEY, tokens.refresh_token);
+  if (tokens.expires_in) {
+    const exp = Date.now() + tokens.expires_in * 1000;
+    store()?.setItem("unifed_expires_at", String(exp));
+  }
+}
+
+/** When the access token is expected to expire (ms epoch), or null if unknown. */
+export function getExpiresAt(): number | null {
+  const v = store()?.getItem("unifed_expires_at");
+  return v ? Number(v) : null;
+}
+
+/**
+ * Refresh the access token using the stored refresh token.
+ * Returns true on success (new tokens stored). On failure the session is
+ * cleared — the caller should route the user to /login.
+ *
+ * NOTE: endpoint shape depends on the backend; adjust the path/body if the
+ * Rails app exposes a different refresh route.
+ */
+export async function refreshSession(): Promise<boolean> {
+  const rt = getRefreshToken();
+  if (!rt) { logout(); return false; }
+  try {
+    const res = await fetch(`${BASE}/api/v1/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ refresh_token: rt })
+    });
+    if (!res.ok) { logout(); return false; }
+    const data = (await res.json()) as { access_token: string; refresh_token?: string; expires_in?: number };
+    storeTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token ?? rt,
+      expires_in: data.expires_in
+    });
+    return true;
+  } catch {
+    logout();
+    return false;
+  }
 }

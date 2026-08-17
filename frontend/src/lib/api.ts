@@ -1,7 +1,7 @@
 /** Typed API client for the UniFed Rails backend. */
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://api.unifed.ng";
 
-import { getToken as getTokenFromAuth } from "./auth";
+import { getToken as getTokenFromAuth, refreshSession } from "./auth";
 
 export interface GradeRecordDTO {
   course_code: string;
@@ -106,6 +106,14 @@ async function authedFetch<T>(path: string, token: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
   });
+  if (res.status === 401) {
+    // Access token expired — try one refresh+retry before failing.
+    if (await refreshSession()) {
+      const rt = getToken();
+      if (rt) return authedFetch<T>(path, rt);
+    }
+    throw new Error("Session expired — please sign in again.");
+  }
   if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json() as Promise<T>;
 }

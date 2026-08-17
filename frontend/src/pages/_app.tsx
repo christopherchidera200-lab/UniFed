@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UniFedLayout } from "@/components/layout/UniFedLayout";
 import { ThemeScript } from "@/components/theme/ThemeScript";
+import { SessionProvider } from "@/lib/session";
 import "@/styles/globals.css";
 
 const dmSans = DM_Sans({
@@ -20,11 +21,13 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeScript />
-      <div className={dmSans.variable}>
-        <UniFedLayout>
-          <Component {...pageProps} />
-        </UniFedLayout>
-      </div>
+      <SessionProvider>
+        <div className={dmSans.variable}>
+          <UniFedLayout>
+            <Component {...pageProps} />
+          </UniFedLayout>
+        </div>
+      </SessionProvider>
     </QueryClientProvider>
   );
 }
