@@ -1,7 +1,8 @@
-# UniFed Nigeria — Codebase Inventory (updated)
+# UniFed Nigeria — Codebase Inventory
 
-> Generated: 2026-08-15 · **HEAD:** `f923f12` · `master`, pushed.
-> Working tree: clean (pre-existing `docs/audit-report-*` leftovers excluded intentionally).
+> Generated: 2026-08-17 (refreshed) · **Branch:** `design/readiness` (working branch; `master` is the release line)
+> Canonical live inventory. Supersedes the older `CODEBASE-INVENTORY-AUDIT.md` (removed 2026-08-17).
+> Test counts reflect the latest green runs; re-confirm CI via Actions screenshot (no `gh`/token available locally).
 
 ## 1. Snapshot
 

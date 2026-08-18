@@ -8,13 +8,15 @@ Everything else is planned and described in the SAD / SDD / Roadmap.
 
 ## Navigation (5 tabs)
 
+> Frontend (Next.js Pages Router) ships all five tabs with real, CI-tested pages bound to live API data.
+
 | Tab | Status | Notes |
 |---|---|---|
-| Home | ❌ | Feed/announcements/stories — not built |
-| Connect | ❌ | Messaging/calls/collab — not built |
-| Create (+) | ❌ | Posts/stories/livestreams — not built |
-| Discover | ❌ | Search — not built |
-| Profile | 🟡 | Digital Student ID + Academic Records backend exist; UI thin |
+| Home | ✅ | Dashboard bound to live profile/events/CGPA; quick-access grid |
+| Connect | ✅ | Feed of posts (ContentCard) with Like/Share/Save; federation surface |
+| Create (+) | ✅ | Compose + publish post to university timeline |
+| Discover | ✅ | Course Catalogue, Smart Campus, Research Hub, Calendar entry points |
+| Profile | ✅ | Live identity card (ProfileCard) + Account/University/Admin links |
 
 ## Feature domains
 

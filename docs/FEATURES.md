@@ -1,7 +1,7 @@
 # UniFed Nigeria — Software Features
 
 > Source of truth: `README.md`, `backend/config/routes.rb`, `backend/app/contexts/*`, `frontend/src/pages/*`.
-> Stack: Rails 8.1 modular monolith (16 bounded contexts) + Next.js (App Router, TypeScript, Tailwind). Federation via ActivityPub. Auth via OAuth2 / OIDC / MFA.
+> Stack: Rails 8.1 modular monolith (16 bounded contexts) + Next.js (**Pages Router**, TypeScript, Tailwind). Federation via ActivityPub. Auth via OAuth2 / OIDC / MFA.
 
 ## 1. Federation (ActivityPub) — the core differentiator
 UniFed is a **federated University OS**: each university runs its own instance and joins a network over ActivityPub (JSON-LD). No central owner of data.
